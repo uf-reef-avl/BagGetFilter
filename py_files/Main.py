@@ -42,7 +42,6 @@ class fileBrowser(QtWidgets.QFileDialog):
 # This class creates the main window of the application
 class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
-    # Initializes and defines the Multilaunch window
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
@@ -78,9 +77,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
         self.bagSize = 0
         self.tfDict = {}
-    #
-    # def doNothing(self):
-    #     print "hoho"
+
+
+
     #Corrects the column header sizes
     def setTreeSize(self):
         self.treeSelectedTopics.setColumnWidth(0, self.width() / 3.3)
@@ -413,11 +412,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                         else:
                             if topic in topicSelection:
                                 outbag.write(topic, msg, t)
-                self.progressBar.hide()
+                self.labelProgress.hide()
                 self.progressBar.hide()
                 if tfTopicSelected:
                     QtWidgets.QMessageBox.information(self, "Information", "The new bag has been successfully created. \n")
-                    self.loadBag(filename)
+                    if self.checkLoad.checkState() == 2:
+                        self.loadBag(filename)
                 else:
                     QtWidgets.QMessageBox.warning(self, "Warning", "No valid topic selected")
         else:
