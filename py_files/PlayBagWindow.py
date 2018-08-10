@@ -9,7 +9,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import PlayBagDesign
 import RoscoreNode
-import subprocess
 import pexpect
 import sys
 

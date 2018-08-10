@@ -14,17 +14,7 @@ import sys
 import rosbag, sys, csv
 import time
 import string
-import os  # for file management make directory
-import shutil  # for file management, copy file
-import Queue
-import tf
-import tf2_geometry_msgs
-import tf2_msgs
 import tf2_ros
-
-# b = tf.TfMessage()
-
-
 
 
 

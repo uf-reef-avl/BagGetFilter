@@ -1,5 +1,4 @@
 import subprocess
-import shlex
 import sys
 import signal
 import psutil
