@@ -53,8 +53,8 @@ To manipulate the bag, 3 options are available:
 
 ![Bag Manipulation](./docs/imgs/Bag_manipulation.png "Bag Manipulation")
 
- - Play the current bag by clicking on the "Play the bag button"
+ - Play the current bag by clicking on the "Play the bag" button
 
- - Creating csv files of the selected topics by clicking on the "Save selected topics to csv files". The files will be automatically named but the storage directory has to be specified.
+ - Creating csv files of the selected topics by clicking on the "Save selected topics to csv files" button. The files will be automatically named but the storage directory has to be specified.
 
- - Creating a new bag with only the selected topics by clicking on the "Save selected topics in a filtered bag"
+ - Creating a new bag with only the selected topics by clicking on the "Save selected topics in a filtered bag" button.
