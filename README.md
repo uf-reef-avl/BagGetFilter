@@ -29,29 +29,29 @@ The executable of the BagGetFilter is located in the dist repository. To run it,
 
 Then a window will appear:
 
-![Main Window display](./docs/img/Main_Window.png "Main Window")
+![Main Window display](./docs/imgs/Main_Window.png "Main Window")
 
 2 ways are possible to load a bag file into the application:
 
  - Use the "select your file" button
 
-![Select Button Bag file](./docs/img/Select_Bag_Button.png "Select Button Bag File")
+![Select Button Bag file](./docs/imgs/Select_Bag_Button.png "Select Button Bag File")
 
  - Drag and drop the bag icon from the area on the left to the blank area on the right. Warning, the drag and drop system isn't really sensitive so if it's not working the first time, just try several times.
 
-![Select Area Bag file](./docs/img/Select_Bag_Area.png "Select Area Bag File")
+![Select Area Bag file](./docs/imgs/Select_Bag_Area.png "Select Area Bag File")
 
 All the topics in this bag will be displayed in the blank area and the current bag path will be written on the first line. The clipboard area of the bag will be also populated with some roslaunch commands. The user will be able to see it by clicking on the "show Clipboard" button.
 
-![Clipboard](./docs/img/Clipboard.png "Clipboard")
+![Clipboard](./docs/imgs/Clipboard.png "Clipboard")
 
 In order to select some topics just click on them.
 
-![Selected Topics](./docs/img/Selected_Topics.png "Select Topics")
+![Selected Topics](./docs/imgs/Selected_Topics.png "Select Topics")
 
 To manipulate the bag, 3 options are available:
 
-![Bag Manipulation](./docs/img/Bag_Manipulation.png "Bag Manipulation")
+![Bag Manipulation](./docs/imgs/Bag_manipulation.png "Bag Manipulation")
 
  - Play the current bag by clicking on the "Play the bag button"
 
