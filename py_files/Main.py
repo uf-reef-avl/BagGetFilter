@@ -365,10 +365,11 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
                 for currentItem in self.treeSelectedTopics.selectedItems():
-                    tfTopicSelected = True
+
                     if (currentItem.parent() != None) and (currentItem.text(1) != "/tf") and (
                             currentItem.parent().text(1) != "/tf"):
                         topicSelection.append(currentItem.text(1))
+                        tfTopicSelected = True
 
                     if (currentItem.parent() != None) and (currentItem.parent().text(1) == "/tf"):
                         frameTfTopicString = str(currentItem.text(2)).split('|')
@@ -378,43 +379,46 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                         childId = self.tfDict[str(self.lineBagFile.text())][0].index(str(currentItem.text(2)))
                         indexList = self.tfDict[str(self.lineBagFile.text())][1][childId]
                         tfSelection.append([frameId,childFrameId,indexList])
+                        tfTopicSelected = True
 
-                self.labelProgress.show()
-                self.progressBar.show()
-                i = 0
-                self.labelProgress.setText("Creating new bag "+filename)
-                with rosbag.Bag(filename, 'w') as outbag:
-                    for topic, msg, t in rosbag.Bag(self.lineBagFile.text()).read_messages():
-                        i += 1
-                        self.progressBar.setValue(int((float(
-                            i) / self.bagSize) * 100))
-                        # This also replaces tf timestamps under the assumption
-                        # that all transforms in the message share the same timestamp
-                        if topic == "/tf" and len(msg.transforms) == 1:
-                            for tfMsg in tfSelection:
-                                if tfMsg[0] == msg.transforms[0].header.frame_id and tfMsg[1] == msg.transforms[0].child_frame_id:
-                                    outbag.write(topic, msg, t)
-                        elif topic == "/tf" and len(msg.transforms) > 1:
-                            inSelection = False
-                            temp_msg = tf2_ros.TFMessage()
-
-                            for tfMsg in tfSelection:
-                                for index in tfMsg[2]:
-                                    try:
-                                        if tfMsg[0] == msg.transforms[index].header.frame_id and tfMsg[1] == msg.transforms[index].child_frame_id:
-                                            temp_msg.transforms.append(msg.transforms[index])
-                                            inSelection = True
-                                    except:
-                                        pass
-
-                            if inSelection:
-                                outbag.write(topic, temp_msg, t)
-                        else:
-                            if topic in topicSelection:
-                                outbag.write(topic, msg, t)
-                self.labelProgress.hide()
-                self.progressBar.hide()
                 if tfTopicSelected:
+                    self.labelProgress.show()
+                    self.progressBar.show()
+                    i = 0
+
+                    self.labelProgress.setText("Creating new bag "+filename)
+                    with rosbag.Bag(filename, 'w') as outbag:
+                        for topic, msg, t in rosbag.Bag(self.lineBagFile.text()).read_messages():
+                            i += 1
+                            self.progressBar.setValue(int((float(
+                                i) / self.bagSize) * 100))
+                            # This also replaces tf timestamps under the assumption
+                            # that all transforms in the message share the same timestamp
+                            if topic == "/tf" and len(msg.transforms) == 1:
+                                for tfMsg in tfSelection:
+                                    if tfMsg[0] == msg.transforms[0].header.frame_id and tfMsg[1] == msg.transforms[0].child_frame_id:
+                                        outbag.write(topic, msg, t)
+                            elif topic == "/tf" and len(msg.transforms) > 1:
+                                inSelection = False
+                                temp_msg = tf2_ros.TFMessage()
+
+                                for tfMsg in tfSelection:
+                                    for index in tfMsg[2]:
+                                        try:
+                                            if tfMsg[0] == msg.transforms[index].header.frame_id and tfMsg[1] == msg.transforms[index].child_frame_id:
+                                                temp_msg.transforms.append(msg.transforms[index])
+                                                inSelection = True
+                                        except:
+                                            pass
+
+                                if inSelection:
+                                    outbag.write(topic, temp_msg, t)
+                            else:
+                                if topic in topicSelection:
+                                    outbag.write(topic, msg, t)
+                    self.labelProgress.hide()
+                    self.progressBar.hide()
+
                     QtWidgets.QMessageBox.information(self, "Information", "The new bag has been successfully created. \n")
                     if self.checkLoad.checkState() == 2:
                         self.loadBag(filename)
