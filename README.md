@@ -17,9 +17,13 @@ If you want to use it as a tool, you won't need any library and you will just ha
 
 To install it, clone the BagGetFilter's remote repository in your computer.
 
+```
 git clone http://192.168.1.101/AVL-Summer-18/BagGetFilter
+```
 
 ## Usage
+
+### Main window utilisation
 
 The executable of the BagGetFilter is located in the dist repository. To run it, navigate to the dist repository and type the command:
 
@@ -31,30 +35,53 @@ Then a window will appear:
 
 ![Main Window display](./docs/imgs/Main_Window.png "Main Window")
 
-2 ways are possible to load a bag file into the application:
-
- - Use the "select your file" button
-
-![Select Button Bag file](./docs/imgs/Select_Bag_Button.png "Select Button Bag File")
-
- - Drag and drop the bag icon from the area on the left to the blank area on the right. Warning, the drag and drop system isn't really sensitive so if it's not working the first time, just try several times.
+To load a bag file into the application, drag and drop the bag icon from the area on the left to the blank area on the right. Warning, the drag and drop system isn't really sensitive so if it's not working the first time, just try several times. It is also possible to load multiples bags at the same time by keeping the "CTRL" or "SHIFT" key pressed and drag and drop mutliples items.
 
 ![Select Area Bag file](./docs/imgs/Select_Bag_Area.png "Select Area Bag File")
 
-All the topics in this bag will be displayed in the blank area and the current bag path will be written on the first line. The clipboard area of the bag will be also populated with some roslaunch commands. The user will be able to see it by clicking on the "show Clipboard" button.
+All the topics of the bags will be displayed in the blank area. The clipboard area of the bags will be also populated with some roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. By the way, the button "Clear Bags" is useful to flush the bags currently loaded in the application:
 
 ![Clipboard](./docs/imgs/Clipboard.png "Clipboard")
 
-In order to select some topics just click on them.
+In order to select some topics just keep the "CTRL" or "SHIFT" key pressed and click on them.
 
 ![Selected Topics](./docs/imgs/Selected_Topics.png "Select Topics")
 
-To manipulate the bag, 3 options are available:
+To manipulate the bags, 3 options are availables:
 
 ![Bag Manipulation](./docs/imgs/Bag_manipulation.png "Bag Manipulation")
 
- - Play the current bag by clicking on the "Play the bag" button
+ - Play the bags by clicking on the "Play the bag" button
 
  - Creating csv files of the selected topics by clicking on the "Save selected topics to csv files" button. The files will be automatically named but the storage directory has to be specified.
 
- - Creating a new bag with only the selected topics by clicking on the "Save selected topics in a filtered bag" button.
+ - Creating news bag with only the selected topics by clicking on the "Save selected topics in a filtered bag" button. The files will be automatically named by keeping the same bag name and adding the suffix specified in the upper line. The storage directory must also be specified.
+ 
+![Bag Suffix](./docs/imgs/Bag_suffix.png "Bag Suffix")
+
+ - If the user wants to manipulate several bags with the same topics content, he can activate the "Matching Bag/Topic Highlighting" checkbox. Then when he will select a topic in one bag, this topic will be automatically selected in all the others bags with the same topics contents. 
+
+ - To load the new filtered bags just after their creation ensure that the "Load the new filtered bag" checkbox is activated.
+
+### Playing bags
+
+After clicking on the "play bag" button, the "play bag" window will appear.
+
+![Bag window](./docs/imgs/play_bags.png "Bag window")
+
+Then, the user will be able to choose the bag that he wants to play between the previous loaded bag. 
+
+![Bag Selection](./docs/imgs/play_bag_selection.png "Bag Selection")
+
+Before playing it, he can also specify different playing arguments.
+
+![Bag option](./docs/imgs/play_options.png "Bag Option")
+
+While running the bag, the ouput informations will be shown in the plain text area. It is possible to pause the bag by clicking on the "Pause" button or to stop it definitely by clicking on the "Stop" button.
+
+![Bag Running](./docs/imgs/play_bag_running.png "Bag Running")
+
+When the bag is paused, the user can also run it step by step by clicking on the "Step" button or resume it or stop it.
+
+![Bag Paused](./docs/imgs/play_bag_paused.png "Bag Paused")
+

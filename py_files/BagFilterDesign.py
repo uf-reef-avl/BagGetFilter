@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_dialog(object):
     def setupUi(self, dialog):
         dialog.setObjectName("dialog")
-        dialog.resize(1096, 657)
+        dialog.resize(1158, 657)
         self.gridLayout = QtWidgets.QGridLayout(dialog)
         self.gridLayout.setObjectName("gridLayout")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -56,6 +56,9 @@ class Ui_dialog(object):
         self.checkLoad.setTristate(False)
         self.checkLoad.setObjectName("checkLoad")
         self.horizontalLayout_3.addWidget(self.checkLoad)
+        self.checkCrossSelection = QtWidgets.QCheckBox(dialog)
+        self.checkCrossSelection.setObjectName("checkCrossSelection")
+        self.horizontalLayout_3.addWidget(self.checkCrossSelection)
         self.gridLayout.addLayout(self.horizontalLayout_3, 8, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -80,6 +83,7 @@ class Ui_dialog(object):
         self.buttonQuit.setText(_translate("dialog", "Save selected topics to csv files"))
         self.buttonSaveBag.setText(_translate("dialog", "Save selected topics in a filtered bag"))
         self.checkLoad.setText(_translate("dialog", "Load the new filtered bag"))
+        self.checkCrossSelection.setText(_translate("dialog", "Matching Bag/Topic Highlighting"))
         self.treeSelectedTopics.headerItem().setText(0, _translate("dialog", "Bags"))
         self.treeSelectedTopics.headerItem().setText(1, _translate("dialog", "Topics"))
         self.treeSelectedTopics.headerItem().setText(2, _translate("dialog", "TF Frames"))
