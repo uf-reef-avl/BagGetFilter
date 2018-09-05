@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['Main.py'],
-             pathex=['/home/turtlebot/bag_filter/src/py_files'],
+             pathex=['/home/turtlebot/bag/BagGetFilter/py_files'],
              binaries=[],
              datas=[],
              hiddenimports=[],

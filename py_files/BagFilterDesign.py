@@ -82,7 +82,7 @@ class Ui_dialog(object):
         self.buttonPlayBag.setText(_translate("dialog", "Play selected topics"))
         self.buttonQuit.setText(_translate("dialog", "Save selected topics to csv files"))
         self.buttonSaveBag.setText(_translate("dialog", "Save selected topics in a filtered bag"))
-        self.checkLoad.setText(_translate("dialog", "Load the new filtered bag"))
+        self.checkLoad.setText(_translate("dialog", "Load filtered bag when done"))
         self.checkCrossSelection.setText(_translate("dialog", "Matching Bag/Topic Highlighting"))
         self.treeSelectedTopics.headerItem().setText(0, _translate("dialog", "Bags"))
         self.treeSelectedTopics.headerItem().setText(1, _translate("dialog", "Topics"))

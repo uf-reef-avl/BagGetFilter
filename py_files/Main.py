@@ -76,7 +76,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.label.setText("Specify the suffix of your filtered bag name")
         self.buttonLoadBagPath.setText("Clear Bags")
         self.setTreeSize()
-        self.checkLoad.setText("")
 
 
         # Paring buttons to functions
