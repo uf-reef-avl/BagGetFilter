@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/py_files/Main.py" line="171" />
+    <bookmark url="file://$PROJECT_DIR$/py_files/Main.py" line="174" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ef129466-1232-46ed-9101-4db8099a5ef1" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/imgs/Bag_manipulation.png" beforeDir="false" afterPath="$PROJECT_DIR$/docs/imgs/Bag_manipulation.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/py_files/BagFilterDesign.py" beforeDir="false" afterPath="$PROJECT_DIR$/py_files/BagFilterDesign.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/BagGetFilter" beforeDir="false" afterPath="$PROJECT_DIR$/dist/BagGetFilter" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/py_files/Main.py" beforeDir="false" afterPath="$PROJECT_DIR$/py_files/Main.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -42,40 +39,40 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="md" value="1294" />
-          <entry key="py" value="2328" />
+          <entry key="md" value="1380" />
+          <entry key="py" value="2363" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Markdown" value="1294" />
-          <entry key="Python" value="2328" />
+          <entry key="Markdown" value="1380" />
+          <entry key="Python" value="2363" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/py_files/Main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="30">
-              <caret line="118" column="17" selection-start-line="118" selection-start-column="17" selection-end-line="118" selection-end-column="17" />
+            <state relative-caret-position="225">
+              <caret line="137" lean-forward="true" selection-start-line="137" selection-end-line="137" />
               <folding>
                 <element signature="e#77#119#0" expanded="true" />
-                <marker date="1536854017333" expanded="true" signature="4117:6724" ph="..." />
-                <marker date="1536854017333" expanded="true" signature="6753:6762" ph="..." />
+                <marker date="1536871043602" expanded="true" signature="4117:6838" ph="..." />
+                <marker date="1536871043602" expanded="true" signature="6867:6876" ph="..." />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="370">
-                <caret line="67" column="89" selection-start-line="67" selection-start-column="89" selection-end-line="67" selection-end-column="89" />
+              <first_editor relative-caret-position="385">
+                <caret line="68" selection-start-line="68" selection-end-line="68" />
               </first_editor>
               <second_editor />
             </state>
@@ -86,7 +83,7 @@
         <entry file="file://$PROJECT_DIR$/py_files/PlayBagWindow.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="210">
-              <caret line="195" column="45" selection-start-line="195" selection-start-column="26" selection-end-line="195" selection-end-column="45" />
+              <caret line="195" column="45" selection-start-line="195" selection-start-column="45" selection-end-line="195" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -117,8 +114,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/py_files/Main.py" />
         <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/py_files/Main.py" />
       </list>
     </option>
   </component>
@@ -252,10 +249,20 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="385">
+            <caret line="68" selection-start-line="68" selection-end-line="68" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/py_files/PlayBagWindow.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="210">
-          <caret line="195" column="45" selection-start-line="195" selection-start-column="26" selection-end-line="195" selection-end-column="45" />
+          <caret line="195" column="45" selection-start-line="195" selection-start-column="45" selection-end-line="195" selection-end-column="45" />
         </state>
       </provider>
     </entry>
@@ -268,23 +275,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/py_files/Main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="30">
-          <caret line="118" column="17" selection-start-line="118" selection-start-column="17" selection-end-line="118" selection-end-column="17" />
+        <state relative-caret-position="225">
+          <caret line="137" lean-forward="true" selection-start-line="137" selection-end-line="137" />
           <folding>
             <element signature="e#77#119#0" expanded="true" />
-            <marker date="1536854017333" expanded="true" signature="4117:6724" ph="..." />
-            <marker date="1536854017333" expanded="true" signature="6753:6762" ph="..." />
+            <marker date="1536871043602" expanded="true" signature="4117:6838" ph="..." />
+            <marker date="1536871043602" expanded="true" signature="6867:6876" ph="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="370">
-            <caret line="67" column="89" selection-start-line="67" selection-start-column="89" selection-end-line="67" selection-end-column="89" />
-          </first_editor>
-          <second_editor />
         </state>
       </provider>
     </entry>

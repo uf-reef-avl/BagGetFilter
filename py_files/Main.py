@@ -136,6 +136,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
             newBagName = tempBagName+"_timestamped_"+str(newTimeStamped).replace(".","_")+".bag"
 
+            if self.checkMeta.checkState() != 2:
+                newBagName = newBagName[:-4] + "_with_meta.bag"
+
             outbag = rosbag.Bag(newBagName, "w", options=bag.options )
             i = 0.
 
