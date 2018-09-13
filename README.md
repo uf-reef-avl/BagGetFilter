@@ -47,7 +47,7 @@ In order to select some topics just keep the "CTRL" or "SHIFT" key pressed and c
 
 ![Selected Topics](./docs/imgs/Selected_Topics.png "Select Topics")
 
-To manipulate the bags, 3 options are availables:
+To manipulate the bags, differents options are availables:
 
 ![Bag Manipulation](./docs/imgs/Bag_manipulation.png "Bag Manipulation")
 
@@ -62,6 +62,12 @@ To manipulate the bags, 3 options are availables:
  - If the user wants to manipulate several bags with the same topics content, he can activate the "Matching Bag/Topic Highlighting" checkbox. Then when he will select a topic in one bag, this topic will be automatically selected in all the others bags with the same topics contents. 
 
  - To load the new filtered bags just after their creation ensure that the "Load the new filtered bag" checkbox is activated.
+
+ - When the checkbox "Remove beginning and ending metadata from bag" is checked, the new filtered or timestamped bag will have his starting timestamp set to his first message's timestamp and his ending timestamp set to his last message's timestamp. If it is not checked, a topic called "/metadata" will be added to the new bag in order to keep the original start and end timestamp of the initial bag.
+
+It is also possible to generate new bags with differents timestamps from the original one by double-clicking on the timestamped parameter of one bag and modifying it in the tree widget.  
+
+![Timestamp modification](./docs/imgs/timestamp_modification.png "Bag Suffix")
 
 ### Playing bags
 

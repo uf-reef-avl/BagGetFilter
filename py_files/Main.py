@@ -9,10 +9,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PlayBagWindow import BagPlay
 import BagFilterDesign
-import rosbag, sys, csv, os
+import rosbag, sys, csv, os, rospy
 import string
 import tf2_ros
-
+from std_msgs.msg import String
 
 
 
@@ -85,6 +85,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.buttonPlayBag.clicked.connect(self.playBag)
         self.buttonClipboard.clicked.connect(self.showClipboard)
         self.treeSelectedTopics.itemSelectionChanged.connect(self.multiTypeSelection)
+        self.treeSelectedTopics.itemDoubleClicked.connect(self.editBagTimeStamp)
+        self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
 
         #Activates the drag and drop functionality of the window
         self.setAcceptDrops(True)
@@ -99,10 +101,80 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.dictSameTypesItem = {}
         # listOfTopics[bagname] = [list of topics name]
         self.listOfTopics = {}
-        # listOfTopics[bagname] = [bag number of message, bag duration]
+        # listOfTopics[bagname] = [bag number of message, bag duration, start time, end time]
         self.dictBagsInfos = {}
 
 
+    def editBagTimeStamp(self, item, column):
+        item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
+        if (column != 3 or item.parent()!=None):
+            item.setFlags(item.flags()  & ~QtCore.Qt.ItemIsEditable)
+
+    def changeBagTimeStamp(self, item, column):
+
+        self.treeSelectedTopics.itemChanged.disconnect()
+
+        if (column == 3):
+            bagName = item.text(0)
+            oldTimeStamped  = str(self.dictBagsInfos[bagName][2])
+           # try:
+            newTimeStamped = float(item.text(3))
+            self.enableDisableButton(False)
+
+            self.labelProgress.setText("Editing bag "+bagName+" timestamp" )
+            self.labelProgress.show()
+            self.progressBar.show()
+            self.progressBar.setValue(0.)
+
+            bag = rosbag.Bag(bagName)
+
+            splitBagName =  bagName.split("_timestamped_")
+            if len(splitBagName) == 1 :
+                tempBagName = splitBagName[0][:-4]
+            else:
+                tempBagName = splitBagName[0]
+
+            newBagName = tempBagName+"_timestamped_"+str(newTimeStamped).replace(".","_")+".bag"
+
+            outbag = rosbag.Bag(newBagName, "w", options=bag.options )
+            i = 0.
+
+            if self.checkMeta.checkState() != 2:
+                metadata_msg = String(data='time when the bag was recorded ')
+                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(newTimeStamped))
+
+            for topic, msg, t in bag.read_messages():
+                if self.checkMeta.checkState() == 2 and i == 0:
+                    oldTimeStamped = t.to_sec()
+
+                i += 1
+                self.progressBar.setValue(int(float(i) / float(self.dictBagsInfos[bagName][0]) * 100))
+                newT = rospy.Time.from_sec((t.to_sec() - float(oldTimeStamped)) + newTimeStamped)
+                outbag.write(topic, msg, newT)
+
+            if self.checkMeta.checkState() != 2:
+                metadata_msg = String(data='time when the bag was ended')
+                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec((self.dictBagsInfos[bagName][3] - float(oldTimeStamped)) + newTimeStamped))
+
+            outbag.close()
+            bag.close()
+
+            #os.system("mv -f "+newBagName+" "+bagName)
+
+            if self.treeSelectedTopics.findItems(newBagName, QtCore.Qt.MatchExactly, 0) == []:
+                self.loadBag(newBagName)
+
+
+            self.labelProgress.hide()
+            self.progressBar.hide()
+            self.enableDisableButton(True)
+            #except ValueError:
+            #   QtWidgets.QMessageBox.warning(self, "Warning", "Enter only numbers")
+            #except TypeError:
+            #   QtWidgets.QMessageBox.warning(self, "Warning", "Enter a positive number")
+
+            item.setText(3, str(oldTimeStamped))
+        self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
 
 
     def multiTypeSelection(self):
@@ -146,9 +218,10 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
     def setTreeSize(self):
         """This function corrects the column header sizes of the tree widget which displays the topics and bags contents"""
-        self.treeSelectedTopics.setColumnWidth(0, 2*self.width() / 9.)
-        self.treeSelectedTopics.setColumnWidth(1, 2*self.width() / 9.)
-        self.treeSelectedTopics.setColumnWidth(2, 2*self.width() / 9.)
+        self.treeSelectedTopics.setColumnWidth(0, 2*self.width() / 12.)
+        self.treeSelectedTopics.setColumnWidth(1, 2*self.width() / 12.)
+        self.treeSelectedTopics.setColumnWidth(2, 2*self.width() / 12.)
+        self.treeSelectedTopics.setColumnWidth(3, 2 * self.width() / 12.)
 
 
     def findSimilarBagTypeInTree(self, bagName):
@@ -228,10 +301,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
             bagItem = QtWidgets.QTreeWidgetItem()
             bagItem.setText(0,filePath)
 
+
             #Load the bag
             bag = rosbag.Bag(filePath)
             bagContents = bag.read_messages()
             bagName = bag.filename
+            bagItem.setText(3, str(bag.get_start_time()))
 
             #Update the ui elements and the data structures
             self.listOfTopics[filePath] = []
@@ -286,7 +361,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
             listSimilarItem = self.findSimilarBagTypeInTree(bagItem.text(0))
             self.dictSameTypesItem[bagItem] = listSimilarItem
 
-            self.dictBagsInfos[filePath] = [self.bagSize , bag.get_end_time()-bag.get_start_time()]
+            self.dictBagsInfos[filePath] = [self.bagSize , bag.get_end_time()-bag.get_start_time(), bag.get_start_time(), bag.get_end_time()]
 
 
             #propagate the found similarities in the similaritie dict for the others bags items
@@ -565,7 +640,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                             suffix = "_" + self.lineBagFile.text()
                         else:
                             suffix = self.lineBagFile.text()
-                        filename = folder+"/"+self.treeSelectedTopics.topLevelItem(bagIndex).text(0).split('/')[-1].replace(".","_") + "_" + suffix +".bag"
+
+                        filename = folder+"/"+self.treeSelectedTopics.topLevelItem(bagIndex).text(0).split('/')[-1].replace(".","_") + suffix +".bag"
                         tfSelection = dictTfSelection[self.treeSelectedTopics.topLevelItem(bagIndex).text(0)] if self.treeSelectedTopics.topLevelItem(bagIndex).text(0) in  dictTfSelection.keys() else []
                         topicSelection = dictTopicSelection[self.treeSelectedTopics.topLevelItem(bagIndex).text(0)] if self.treeSelectedTopics.topLevelItem(bagIndex).text(0) in  dictTopicSelection.keys() else []
 
@@ -577,7 +653,13 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
                         # Create a new Bag file for each topic
                         with rosbag.Bag(filename, 'w') as outbag:
+                            if self.checkMeta.checkState() != 2:
+                                metadata_msg = String(data='time when the bag was recorded ')
+                                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(self.dictBagsInfos[self.treeSelectedTopics.topLevelItem(bagIndex).text(0)][2] ))
+
                             for topic, msg, t in rosbag.Bag(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).read_messages():
+
+
                                 # update ui elements
                                 i += 1
                                 self.progressBar.setValue(int((float(
@@ -610,6 +692,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                                     # if the message is a not a tf message and the topic of this message has been selected by the user
                                     if topic in topicSelection:
                                         outbag.write(topic, msg, t)
+                            if self.checkMeta.checkState() != 2:
+                                metadata_msg = String(data='time when the bag was ended ')
+                                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(self.dictBagsInfos[self.treeSelectedTopics.topLevelItem(bagIndex).text(0)][3]))
 
                             #update ui elements
                             self.labelProgress.hide()

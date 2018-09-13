@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>dialog</class>
+ <widget class="QDialog" name="dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1067</width>
+    <height>539</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Play bag window</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="3" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Play options</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="checkFrequency">
+          <property name="text">
+           <string>Publish clock time at frequency HZ (default =100)</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="checkFactor">
+          <property name="text">
+           <string>Multiply the publish rate by FACTOR. </string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QCheckBox" name="checkSkip">
+          <property name="text">
+           <string>Skip regions in the bag with no messages for more than SEC seconds. </string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QCheckBox" name="checkStart">
+          <property name="text">
+           <string>Start SEC seconds into the bags. </string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="checkSleep">
+          <property name="text">
+           <string>Sleep SEC seconds after every advertise call  </string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QDoubleSpinBox" name="spinStart"/>
+        </item>
+        <item row="1" column="1">
+         <widget class="QDoubleSpinBox" name="spinSleep_2"/>
+        </item>
+        <item row="1" column="2">
+         <widget class="QCheckBox" name="checkPartTime">
+          <property name="text">
+           <string>Play only SEC seconds from the bag files. </string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="checkLoop">
+          <property name="text">
+           <string>Loop playback. </string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QDoubleSpinBox" name="spinFrequency"/>
+        </item>
+        <item row="1" column="3">
+         <widget class="QDoubleSpinBox" name="spinPartTime"/>
+        </item>
+        <item row="2" column="3">
+         <widget class="QDoubleSpinBox" name="spinSkip"/>
+        </item>
+        <item row="2" column="1">
+         <widget class="QDoubleSpinBox" name="spinFactor"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QTreeWidget" name="treeBag">
+       <column>
+        <property name="text">
+         <string>Bag name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Bag messages number</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Bag duration</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPlainTextEdit" name="terminalPlainText"/>
+     </item>
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>24</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="text">
+          <string>Play</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonPause">
+         <property name="text">
+          <string>Pause</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonStep">
+         <property name="text">
+          <string>Step</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonStop">
+         <property name="text">
+          <string>Stop</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
