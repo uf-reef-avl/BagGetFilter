@@ -117,64 +117,64 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         if (column == 3):
             bagName = item.text(0)
             oldTimeStamped  = str(self.dictBagsInfos[bagName][2])
-           # try:
-            newTimeStamped = float(item.text(3))
-            self.enableDisableButton(False)
+            try:
+                newTimeStamped = float(item.text(3))
+                self.enableDisableButton(False)
 
-            self.labelProgress.setText("Editing bag "+bagName+" timestamp" )
-            self.labelProgress.show()
-            self.progressBar.show()
-            self.progressBar.setValue(0.)
+                self.labelProgress.setText("Editing bag "+bagName+" timestamp" )
+                self.labelProgress.show()
+                self.progressBar.show()
+                self.progressBar.setValue(0.)
 
-            bag = rosbag.Bag(bagName)
+                bag = rosbag.Bag(bagName)
 
-            splitBagName =  bagName.split("_timestamped_")
-            if len(splitBagName) == 1 :
-                tempBagName = splitBagName[0][:-4]
-            else:
-                tempBagName = splitBagName[0]
+                splitBagName =  bagName.split("_timestamped_")
+                if len(splitBagName) == 1 :
+                    tempBagName = splitBagName[0][:-4]
+                else:
+                    tempBagName = splitBagName[0]
 
-            newBagName = tempBagName+"_timestamped_"+str(newTimeStamped).replace(".","_")+".bag"
+                newBagName = tempBagName+"_timestamped_"+str(newTimeStamped).replace(".","_")+".bag"
 
-            if self.checkMeta.checkState() != 2:
-                newBagName = newBagName[:-4] + "_with_meta.bag"
+                if self.checkMeta.checkState() != 2:
+                    newBagName = newBagName[:-4] + "_with_meta.bag"
 
-            outbag = rosbag.Bag(newBagName, "w", options=bag.options )
-            i = 0.
+                outbag = rosbag.Bag(newBagName, "w", options=bag.options )
+                i = 0.
 
-            if self.checkMeta.checkState() != 2:
-                metadata_msg = String(data='time when the bag was recorded ')
-                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(newTimeStamped))
+                if self.checkMeta.checkState() != 2:
+                    metadata_msg = String(data='time when the bag was recorded ')
+                    outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(newTimeStamped))
 
-            for topic, msg, t in bag.read_messages():
-                if self.checkMeta.checkState() == 2 and i == 0:
-                    oldTimeStamped = t.to_sec()
+                for topic, msg, t in bag.read_messages():
+                    if self.checkMeta.checkState() == 2 and i == 0:
+                        oldTimeStamped = t.to_sec()
 
-                i += 1
-                self.progressBar.setValue(int(float(i) / float(self.dictBagsInfos[bagName][0]) * 100))
-                newT = rospy.Time.from_sec((t.to_sec() - float(oldTimeStamped)) + newTimeStamped)
-                outbag.write(topic, msg, newT)
+                    i += 1
+                    self.progressBar.setValue(int(float(i) / float(self.dictBagsInfos[bagName][0]) * 100))
+                    newT = rospy.Time.from_sec((t.to_sec() - float(oldTimeStamped)) + newTimeStamped)
+                    outbag.write(topic, msg, newT)
 
-            if self.checkMeta.checkState() != 2:
-                metadata_msg = String(data='time when the bag was ended')
-                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec((self.dictBagsInfos[bagName][3] - float(oldTimeStamped)) + newTimeStamped))
+                if self.checkMeta.checkState() != 2:
+                    metadata_msg = String(data='time when the bag was ended')
+                    outbag.write('/metadata', metadata_msg, rospy.Time.from_sec((self.dictBagsInfos[bagName][3] - float(oldTimeStamped)) + newTimeStamped))
 
-            outbag.close()
-            bag.close()
+                outbag.close()
+                bag.close()
 
-            #os.system("mv -f "+newBagName+" "+bagName)
+                #os.system("mv -f "+newBagName+" "+bagName)
 
-            if self.treeSelectedTopics.findItems(newBagName, QtCore.Qt.MatchExactly, 0) == []:
-                self.loadBag(newBagName)
+                if self.treeSelectedTopics.findItems(newBagName, QtCore.Qt.MatchExactly, 0) == []:
+                    self.loadBag(newBagName)
 
 
-            self.labelProgress.hide()
-            self.progressBar.hide()
-            self.enableDisableButton(True)
-            #except ValueError:
-            #   QtWidgets.QMessageBox.warning(self, "Warning", "Enter only numbers")
-            #except TypeError:
-            #   QtWidgets.QMessageBox.warning(self, "Warning", "Enter a positive number")
+                self.labelProgress.hide()
+                self.progressBar.hide()
+                self.enableDisableButton(True)
+            except ValueError:
+               QtWidgets.QMessageBox.warning(self, "Warning", "Enter only numbers")
+            except TypeError:
+               QtWidgets.QMessageBox.warning(self, "Warning", "Enter a positive number")
 
             item.setText(3, str(oldTimeStamped))
         self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
