@@ -6,7 +6,7 @@ The BagGetFilter utility is a simple, user friendly interface to manipulate rosb
 
 For users:
 
-Download the zipped BagGetFilter_(desired python version), exctract the archive, and then run the executable from the command line by moving to the directory and using "./BagGetFilter"
+Download the zipped BagGetFilter_(desired python version), extract the archive, and then run the executable from the command line by moving to the directory and using "./BagGetFilter"
 
 For developers:
 
