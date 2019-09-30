@@ -11,20 +11,19 @@ from PlayBagWindow import BagPlay
 import BagFilterDesign
 import rosbag, sys, csv, os, rospy
 import string
-import tf2_ros
+from tf2_ros import TFMessage
 from std_msgs.msg import String
 
 
-
-
 class fileBrowser(QtWidgets.QFileDialog):
-    """This class inherites from the QFileDialog class and defines the browser part of the main window"""
+    """This class inherits from the QFileDialog class and defines the browser part of the main window"""
+
 
     def __init__(self):
         """Initialization of the class and hiding of the useless elements"""
         QtWidgets.QFileDialog.__init__(self)
 
-        #Find the irrelevants parts of the QFileDialog
+        #Find the irrelevant parts of the QFileDialog
         buttonBox = self.findChild(QtWidgets.QDialogButtonBox)
         lineEdit = self.findChild(QtWidgets.QLineEdit)
         label = self.findChildren(QtWidgets.QLabel)
@@ -45,15 +44,15 @@ class fileBrowser(QtWidgets.QFileDialog):
 
         self.setDirectory(str(os.getcwd()))
 
+
     def accept(self):
         """Override of the accept function of the QFileDialog to avoid the browser to hide when the user double click on a element of the browser"""
         self.show()
 
 
-
-
 class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
     """This class creates the main window of the application"""
+
 
     def __init__(self):
         """Initialization of the class, hide some of the ui part, connect the qt signal with the qt slot"""
@@ -109,6 +108,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
         if (column != 3 or item.parent()!=None):
             item.setFlags(item.flags()  & ~QtCore.Qt.ItemIsEditable)
+
 
     def changeBagTimeStamp(self, item, column):
 
@@ -216,9 +216,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                             similarBagItem.setSelected(True)
 
 
-
-
-
     def setTreeSize(self):
         """This function corrects the column header sizes of the tree widget which displays the topics and bags contents"""
         self.treeSelectedTopics.setColumnWidth(0, 2*self.width() / 12.)
@@ -257,6 +254,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
         return similarTypeItem
 
+
     def showClipboard(self):
         """Show or hide the clipboard when the user click on the clipboard button"""
         if self.textClipboard.isVisible():
@@ -273,7 +271,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.tfDict = {}
         self.dictSameTypesItem = {}
         self.dictBagsInfos = {}
-
 
 
     def enableDisableButton(self, available):
@@ -390,6 +387,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         #Reenable the function button of the ui
         self.enableDisableButton(True)
 
+
     def bagSelected(self):
         """This function retrieve and sort the selected bags, selected topics and selected tf topics from the topic tree widget and return them in some temporary dictionaries and list"""
 
@@ -443,7 +441,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                 meaningfullItemSelected = True
 
         return bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected
-
 
 
     def saveCsvFile(self):
@@ -597,8 +594,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                     self.labelProgress.hide()
                     self.progressBar.hide()
 
-                if fileCreated:
-                    QtWidgets.QMessageBox.information(self, "Information", "The csv files have been successfully created")
+                    if fileCreated:
+                        QtWidgets.QMessageBox.information(self, "Information", "The csv files have been successfully created")
 
         #if there is no item in the topic tree widget and the user try to launch the csv exportation
         elif self.treeSelectedTopics.topLevelItemCount() == 0:
@@ -678,13 +675,13 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                                 # if the message is a tf message and there is more than one transformation in it
                                 elif topic == "/tf" and len(msg.transforms) > 1:
                                     inSelection = False
-                                    temp_msg = tf2_ros.TFMessage()
+                                    temp_msg = TFMessage()
 
-                                    #iterate over the differente transform messages
+                                    #iterate over the different transform messages
                                     for tfMsg in tfSelection:
                                         for index in tfMsg[2]:
                                             # if the transformation message match a selected tf topic
-                                                if index < len(msg.transforms) and  tfMsg[0] == msg.transforms[index].header.frame_id and tfMsg[1] == msg.transforms[index].child_frame_id:
+                                                if index < len(msg.transforms) and tfMsg[0] == msg.transforms[index].header.frame_id and tfMsg[1] == msg.transforms[index].child_frame_id:
                                                     temp_msg.transforms.append(msg.transforms[index])
                                                     inSelection = True
 
@@ -714,12 +711,13 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                 else:
                     QtWidgets.QMessageBox.warning(self, "Warning", "No valid topic selected")
 
-        # if there is no item in the topic tree widget and the user try to launch the bag filter
+        # If there is no item in the topic tree widget and the user try to launch the bag filter
         else:
             QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
 
-        # Reenable the function button of the ui
+        # Re-enable the function button of the ui
         self.enableDisableButton(True)
+
 
     def playBag(self):
         """Display the play bag window"""
@@ -731,13 +729,13 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
             QtWidgets.QMessageBox.warning(self, "Warning", "No bag loaded")
 
 
-
     def dragEnterEvent(self, e):
         """Accept the drag and drop event"""
         if e.mimeData().hasText() and self.dragDropEnable:
             e.accept()
         else:
             e.ignore()
+
 
     def dropEvent(self, e):
         """Define the behavior when an item is dropped in the Main Window"""
@@ -755,7 +753,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                     bagAlreadyInTree = True
 
             #throw an error when the bag has aleady been loaded
-            if not(bagAlreadyInTree):
+            if not bagAlreadyInTree:
                 self.loadBag(filename)
             else:
                 errorString += "the bag : "+filename+" is already loaded \n"
@@ -767,7 +765,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
     def resizeEvent(self, event):
         """Adjust the header of the topic tree widget every time the size of the main window is updated"""
         self.setTreeSize()
-
 
 
 def main():

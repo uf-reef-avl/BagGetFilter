@@ -258,7 +258,7 @@ class BagPlay(QtWidgets.QDialog, PlayBagDesign.Ui_dialog):
             self.buttonPause.setText("Pause")
             self.buttonStep.hide()
 
-        self.bagRunning = not(self.bagRunning)
+        self.bagRunning = not (self.bagRunning)
         self.worker.pauseBagHandler()
 
     def stepBag(self):

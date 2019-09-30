@@ -1,45 +1,37 @@
 # BagGetFilter
-The BagGetFilter package is a simple and user friendly interface to manipulate rosbag. Thanks to it, the user can **play rosbags** or **filter and export topics in CSV format** from them.
+The BagGetFilter utility is a simple, user friendly interface to manipulate rosbags. The user can **play rosbags** or **filter those bags and export topics into CSV format**.
 
-
-## Prerequisites
-If you want to update this package, you will need several libraries:
-
- - pyqt5
- - pexcept
- - ros kinetic
- - python 2.7
- - pyinstaller
-
-If you want to use it as a tool, you won't need any library and you will just have to use the executable.
 
 ## Installation
 
-To install it, clone the BagGetFilter's remote repository in your computer.
+Clone the BagGetFilter's remote repository in your computer.
 
 ```
 git clone http://192.168.1.101/AVL-Summer-18/BagGetFilter
 ```
 
+## Prerequisites
+
+-ROS(Kinetic) needs to be installed for several of the BagGetFilter's functions to work
+
+
 ## Usage
 
-### Main window utilisation
-
-The executable of the BagGetFilter is located in the dist repository. To run it, navigate to the dist repository and type the command:
+The executable of the BagGetFilter is located in the "dist" repository. To run it, navigate to the dist repository and type the command:
 
 ```
 ./BagGetFilter
 ```
 
-Then a window will appear:
+Then the main window will appear:
 
 ![Main Window display](./docs/imgs/Main_Window.png "Main Window")
 
-To load a bag file into the application, drag and drop the bag icon from the area on the left to the blank area on the right. Warning, the drag and drop system isn't really sensitive so if it's not working the first time, just try several times. It is also possible to load multiples bags at the same time by keeping the "CTRL" or "SHIFT" key pressed and drag and drop mutliples items.
+To load a bag file into the application, drag and drop a bag file from the directory viewer on the left to the blank area on the right.  To load multiples bags at the same time hold the "CTRL" key for individual files or the "SHIFT" key for all files between two selections and then drag and drop the selected files.  Loading files can be a little slow with multi-gigabyte bag files.
 
 ![Select Area Bag file](./docs/imgs/Select_Bag_Area.png "Select Area Bag File")
 
-All the topics of the bags will be displayed in the blank area. The clipboard area of the bags will be also populated with some roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. By the way, the button "Clear Bags" is useful to flush the bags currently loaded in the application:
+All of the topics contianed in the bag file(s) will be displayed under the "Topics" column. The clipboard area of the bags will be also populated with some common roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. The "Clear Bags" button clears the bags currently loaded in the application.
 
 ![Clipboard](./docs/imgs/Clipboard.png "Clipboard")
 
@@ -47,47 +39,70 @@ In order to select some topics just keep the "CTRL" or "SHIFT" key pressed and c
 
 ![Selected Topics](./docs/imgs/Selected_Topics.png "Select Topics")
 
-To manipulate the bags, differents options are availables:
+
+### Bag Manipulation
+
+There are several ways to edit/play bag files:
 
 ![Bag Manipulation](./docs/imgs/Bag_manipulation.png "Bag Manipulation")
 
  - Play the bags by clicking on the "Play the bag" button
 
- - Creating csv files of the selected topics by clicking on the "Save selected topics to csv files" button. The files will be automatically named but the storage directory has to be specified.
+ - Create csv files of the selected topics by clicking on the "Save selected topics to csv files" button. The files will be automatically named but the storage directory has to be specified.
 
- - Creating news bag with only the selected topics by clicking on the "Save selected topics in a filtered bag" button. The files will be automatically named by keeping the same bag name and adding the suffix specified in the upper line. The storage directory must also be specified.
+ - Create a new bag with only the selected topics by clicking on the "Save selected topics in a filtered bag" button. The files will be automatically named by keeping the same bag name and adding the suffix specified in the upper line. The storage directory must also be specified.
  
 ![Bag Suffix](./docs/imgs/Bag_suffix.png "Bag Suffix")
 
- - If the user wants to manipulate several bags with the same topics content, he can activate the "Matching Bag/Topic Highlighting" checkbox. Then when he will select a topic in one bag, this topic will be automatically selected in all the others bags with the same topics contents. 
+ - If the user wants to manipulate several bags that contain the same topics, they can activate the "Matching Bag/Topic Highlighting" checkbox above the "Play bags" button. Whenever a topic is selected in one bag this topic will be simultaneously selected in all other bags if present.
 
- - To load the new filtered bags just after their creation ensure that the "Load the new filtered bag" checkbox is activated.
+ - To load a new filtered bag immediately after creation ensure that the "Load filtered bag when done" checkbox is activated/checked.
 
- - When the checkbox "Remove beginning and ending metadata from bag" is checked, the new filtered or timestamped bag will have his starting timestamp set to his first message's timestamp and his ending timestamp set to his last message's timestamp. If it is not checked, a topic called "/metadata" will be added to the new bag in order to keep the original start and end timestamp of the initial bag.
+ - When the checkbox "Remove beginning and ending metadata from bag" is checked, the new filtered or timestamped bag will have its starting timestamp set to the first message's timestamp and its ending timestamp set to the last message's timestamp. If it is not checked, a topic called "/metadata" will be added to the new bag in order to keep the original start and end timestamp of the initial bag.
 
-It is also possible to generate new bags with differents timestamps from the original one by double-clicking on the timestamped parameter of one bag and modifying it in the tree widget.  
+ - To generate new bags with differents timestamps from the original bag, double-click on the timestamped parameter of one bag and modify it in the tree widget.
 
 ![Timestamp modification](./docs/imgs/timestamp_modification.png "Bag Suffix")
 
+
 ### Playing bags
 
-After clicking on the "play bag" button, the "play bag" window will appear.
+After clicking on the "Play bags" button, the "Play bag" window will appear.
 
 ![Bag window](./docs/imgs/play_bags.png "Bag window")
 
-Then, the user will be able to choose the bag that he wants to play between the previous loaded bag. 
+The user will be able to select the bag that they want to playback from the loaded bags. 
 
 ![Bag Selection](./docs/imgs/play_bag_selection.png "Bag Selection")
 
-Before playing it, he can also specify different playing arguments.
+Before playing it, they can also specify different playing arguments.
 
 ![Bag option](./docs/imgs/play_options.png "Bag Option")
 
-While running the bag, the ouput informations will be shown in the plain text area. It is possible to pause the bag by clicking on the "Pause" button or to stop it definitely by clicking on the "Stop" button.
+While running the bag, the ouput information will be shown in the plain text area.  To pause the bag, click on the "Pause" button and to stop playback click on the "Stop" button.
 
 ![Bag Running](./docs/imgs/play_bag_running.png "Bag Running")
 
-When the bag is paused, the user can also run it step by step by clicking on the "Step" button or resume it or stop it.
+When the bag is paused, the user can also move the playback step by step by clicking on the "Step" button, resume with the "Resume" button, or stop playback with the "Stop" button.
 
 ![Bag Paused](./docs/imgs/play_bag_paused.png "Bag Paused")
+
+
+##Built With
+--------------
+
+ - pyqt5
+
+ - pexcept
+
+ - Python 2.7
+
+ - pyinstaller
+
+
+##Authors
+-----------
+
+- Paul Buzaud
+
 

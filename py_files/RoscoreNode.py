@@ -1,3 +1,11 @@
+#!/usr/bin/python2.7
+#
+# File: Main.py
+# Author: Paul Buzaud
+#
+# Created:
+#
+
 import subprocess
 import sys
 import signal

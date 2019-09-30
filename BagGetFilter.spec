@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['Main.py'],
-             pathex=['/home/turtlebot/bag_filter/src'],
+a = Analysis(['/home/matthewh/BagGetFilter/py_files/Main.py'],
+             pathex=['/home/matthewh/BagGetFilter'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -18,12 +18,16 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
+          exclude_binaries=True,
           name='BagGetFilter',
           debug=False,
           strip=False,
           upx=True,
-          runtime_tmpdir=None,
           console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               name='BagGetFilter')
