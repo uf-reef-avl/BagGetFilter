@@ -4,6 +4,12 @@ The BagGetFilter utility is a simple, user friendly interface to manipulate rosb
 
 ## Installation
 
+For users:
+
+Download the zipped BagGetFilter_(desired python version), exctract the archive, and then run the executable from the command line by moving to the directory and using "./BagGetFilter"
+
+For developers:
+
 Clone the BagGetFilter's remote repository in your computer.
 
 ```
@@ -12,7 +18,7 @@ git clone http://192.168.1.101/AVL-Summer-18/BagGetFilter
 
 ## Prerequisites
 
--ROS(Kinetic) needs to be installed for several of the BagGetFilter's functions to work
+ROS(Kinetic) needs to be installed for several of the BagGetFilter's functions to work
 
 
 ## Usage
@@ -25,17 +31,18 @@ The executable of the BagGetFilter is located in the "dist" repository. To run i
 
 Then the main window will appear:
 
+
 ![Main Window display](./docs/imgs/Main_Window.png "Main Window")
 
-To load a bag file into the application, drag and drop a bag file from the directory viewer on the left to the blank area on the right.  To load multiples bags at the same time hold the "CTRL" key for individual files or the "SHIFT" key for all files between two selections and then drag and drop the selected files.  Loading files can be a little slow with multi-gigabyte bag files.
+ - To load a bag file into the application, drag and drop a bag file from the directory viewer on the left to the blank area on the right.  To load multiples bags at the same time hold the "CTRL" key for individual files or the "SHIFT" key for all files between two selections and then drag and drop the selected files.  Loading files can be a little slow with multi-gigabyte bag files.
 
 ![Select Area Bag file](./docs/imgs/Select_Bag_Area.png "Select Area Bag File")
 
-All of the topics contianed in the bag file(s) will be displayed under the "Topics" column. The clipboard area of the bags will be also populated with some common roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. The "Clear Bags" button clears the bags currently loaded in the application.
+ - All of the topics contianed in the bag file(s) will be displayed under the "Topics" column. The clipboard area of the bags will be also populated with some common roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. The "Clear Bags" button clears the bags currently loaded in the application.
 
 ![Clipboard](./docs/imgs/Clipboard.png "Clipboard")
 
-In order to select some topics just keep the "CTRL" or "SHIFT" key pressed and click on them.
+ - In order to select some topics just keep the "CTRL" or "SHIFT" key pressed and click on them.
 
 ![Selected Topics](./docs/imgs/Selected_Topics.png "Select Topics")
 
@@ -67,23 +74,23 @@ There are several ways to edit/play bag files:
 
 ### Playing bags
 
-After clicking on the "Play bags" button, the "Play bag" window will appear.
+ - After clicking on the "Play bags" button, the "Play bag" window will appear.
 
 ![Bag window](./docs/imgs/play_bags.png "Bag window")
 
-The user will be able to select the bag that they want to playback from the loaded bags. 
+ - The user will be able to select the bag that they want to playback from the loaded bags. 
 
 ![Bag Selection](./docs/imgs/play_bag_selection.png "Bag Selection")
 
-Before playing it, they can also specify different playing arguments.
+ - Before playing it, they can also specify different playing arguments.
 
 ![Bag option](./docs/imgs/play_options.png "Bag Option")
 
-While running the bag, the ouput information will be shown in the plain text area.  To pause the bag, click on the "Pause" button and to stop playback click on the "Stop" button.
+ - While running the bag, the ouput information will be shown in the plain text area.  To pause the bag, click on the "Pause" button and to stop playback click on the "Stop" button.
 
 ![Bag Running](./docs/imgs/play_bag_running.png "Bag Running")
 
-When the bag is paused, the user can also move the playback step by step by clicking on the "Step" button, resume with the "Resume" button, or stop playback with the "Stop" button.
+ - When the bag is paused, the user can also move the playback step by step by clicking on the "Step" button, resume with the "Resume" button, or stop playback with the "Stop" button.
 
 ![Bag Paused](./docs/imgs/play_bag_paused.png "Bag Paused")
 
