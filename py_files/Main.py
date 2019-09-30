@@ -3,8 +3,22 @@
 # File: Main.py
 # Author: Paul Buzaud
 #
-# Created:
+# Created: Summer 2018
 #
+# Copyright 2018 FIRSTNAME LASTNAME
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PlayBagWindow import BagPlay
@@ -46,7 +60,7 @@ class fileBrowser(QtWidgets.QFileDialog):
 
 
     def accept(self):
-        """Override of the accept function of the QFileDialog to avoid the browser to hide when the user double click on a element of the browser"""
+        """Function override of the accept function of the QFileDialog to hide when the user double click on a element of the browser"""
         self.show()
 
 
@@ -55,7 +69,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def __init__(self):
-        """Initialization of the class, hide some of the ui part, connect the qt signal with the qt slot"""
+        """Initialization of the class, hide some unneeded ui, and connect the qt signal with the qt slot"""
         super(self.__class__, self).__init__()
         self.setupUi(self)
 
@@ -181,7 +195,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def multiTypeSelection(self):
-        """Used to select simultaneously multiple topics from bags with the same topics contents"""
+        """Used to simultaneously select multiple topics from bags that contain the same topics"""
 
         #Check if this functionality has been activated by the user
         if self.checkCrossSelection.checkState() == 2:
@@ -217,7 +231,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def setTreeSize(self):
-        """This function corrects the column header sizes of the tree widget which displays the topics and bags contents"""
+        """This function corrects the column header sizes of the tree widget which displays the topics and bags topics"""
         self.treeSelectedTopics.setColumnWidth(0, 2*self.width() / 12.)
         self.treeSelectedTopics.setColumnWidth(1, 2*self.width() / 12.)
         self.treeSelectedTopics.setColumnWidth(2, 2*self.width() / 12.)
@@ -225,7 +239,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def findSimilarBagTypeInTree(self, bagName):
-        """Return a list of bag item with the same topics content as the bag argument"""
+        """Return a list of bag items with the same topics as the bag argument"""
 
         similarTypeItem = []
 
@@ -264,7 +278,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def clearTree(self):
-        """Reset all the data structures and flush the tree widget which display the bags and the topics"""
+        """Reset all the data structures and flush the tree widget"""
         self.treeSelectedTopics.clear()
         self.textClipboard.clear()
         self.listOfTopics = {}
@@ -274,7 +288,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def enableDisableButton(self, available):
-        """Lock/unlock the ui by enabling or disabling button when the bags are loading or processing bags"""
+        """Lock/unlock the ui by enabling or disabling button events when loading or processing bags"""
         self.buttonPlayBag.setEnabled(available)
         self.buttonSaveBag.setEnabled(available)
         self.buttonLoadBagPath.setEnabled(available)
@@ -283,7 +297,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def loadBag(self, filename):
-        """Read the topic contents of the bag as argument, update the bag/topic tree widget and the data structures """
+        """Read the topics contained in the bag as an argument and update the bag/topic tree widget and the data structures """
 
         #Disable the functions buttons
         self.enableDisableButton(False)
@@ -389,12 +403,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
 
     def bagSelected(self):
-        """This function retrieve and sort the selected bags, selected topics and selected tf topics from the topic tree widget and return them in some temporary dictionaries and list"""
+        """This function retrieves and sorts the selected bags, selected topics, and selected tf topics from the topic tree widget.  It then returns them in temporary dictionaries and list"""
 
         bagSelection = []
         dictTopicSelection = {}
         dictTfSelection = {}
-        #if some topic item or tfitem are selected then set this variable to true
+        #if some topic item or tf item are selected then set this variable to true
         meaningfullItemSelected = False
 
         #iterate over all the selected items
