@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 #
 # File: Main.py
 # Author: Paul Buzaud
@@ -36,7 +36,7 @@ class fileBrowser(QtWidgets.QFileDialog):
     def __init__(self):
         """Initialization of the class and hiding of the useless elements"""
         QtWidgets.QFileDialog.__init__(self)
-
+        self.setOptions(QtWidgets.QFileDialog.DontUseNativeDialog)
         #Find the irrelevant parts of the QFileDialog
         buttonBox = self.findChild(QtWidgets.QDialogButtonBox)
         lineEdit = self.findChild(QtWidgets.QLineEdit)
@@ -45,7 +45,7 @@ class fileBrowser(QtWidgets.QFileDialog):
         tree = self.findChildren(QtWidgets.QTreeView)
 
         #Change the selection mode of the tree widget
-        file_tree =  tree[0]
+        file_tree = tree[0]
         file_tree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         #Hide the irrelevant part of the QFileDialog
@@ -210,9 +210,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                     bagItem = bagItem.parent()
 
                 #if it exists some bag with the same topic contents
-                if self.dictSameTypesItem[bagItem] != []:
+                if self.dictSameTypesItem[str(bagItem)] != []:
                     #find the correlated current seleted item in theses bags and set them selected
-                    for similarBagItem in self.dictSameTypesItem[bagItem]:
+                    for similarBagItem in self.dictSameTypesItem[str(bagItem)]:
                         if levelOfItem == 2:
                             for topicIndex in range(similarBagItem.childCount()):
                                 topicItem = similarBagItem.child(topicIndex)
@@ -373,7 +373,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
             #find the similar bags items and update the data structure
             listSimilarItem = self.findSimilarBagTypeInTree(bagItem.text(0))
-            self.dictSameTypesItem[bagItem] = listSimilarItem
+            print(str(bagItem))
+            self.dictSameTypesItem[str(bagItem)] = listSimilarItem
 
             self.dictBagsInfos[filePath] = [self.bagSize , bag.get_end_time()-bag.get_start_time(), bag.get_start_time(), bag.get_end_time()]
 
@@ -385,7 +386,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                 tempSimilarList += listSimilarItem
                 itemIndex = tempSimilarList .index(similarItem)
                 tempSimilarList.pop(itemIndex)
-                self.dictSameTypesItem[similarItem] = tempSimilarList
+                self.dictSameTypesItem[str(similarItem)] = tempSimilarList
 
 
             #update ui elements at the end of the loading
