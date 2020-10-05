@@ -503,7 +503,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                             if (currentItem in self.treeSelectedTopics.selectedItems()):
 
                                 #Create a new CSV file for each topic
-                                filename = folder + '/'+ bagName+"_"+ string.replace(topicName, '/', '_slash_') + '.csv'
+                                filename = folder + '/'+ bagName+"_"+ topicName.replace( '/', '_slash_') + '.csv'
                                 self.labelProgress.setText("Save csv file " + filename)
                                 with open(filename, 'w+') as csvfile:
                                     fileCreated = True
@@ -522,12 +522,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                                         self.progressBar.setValue(int((float(
                                             indice) / topicSize * 100)))
                                         msgString = str(msg)
-                                        msgList = string.split(msgString, '\n')
+                                        msgList = msgString.split('\n')
                                         instantaneousListOfData = []
                                         for nameValuePair in msgList:
-                                            splitPair = string.split(nameValuePair, ':')
+                                            splitPair = nameValuePair.split(':')
                                             for i in range(len(splitPair)):  # should be 0 to 1
-                                                splitPair[i] = string.strip(splitPair[i])
+                                                splitPair[i] = splitPair[i].strip()
                                             if len(splitPair) == 2:
                                                 instantaneousListOfData.append(splitPair)
                                         # write the first row from the first element of each pair
@@ -574,17 +574,17 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                                             msgString = str(msg)
 
                                             #Split the tf message thanks to the transformation separator and store every transformations messages in a list
-                                            transformList = string.split(msgString, '  - \n')
+                                            transformList = msgString.split('  - \n')
                                             transformList = transformList[1:]
 
                                             #iterate on all the transformations messages
                                             for indexTransform, transformString in enumerate(transformList):
-                                                msgList = string.split(transformString, '\n')
+                                                msgList = transformString.split('\n')
                                                 instantaneousListOfData = []
                                                 for nameValuePair in msgList:
-                                                    splitPair = string.split(nameValuePair, ':')
+                                                    splitPair = nameValuePair.split( ':')
                                                     for i in range(len(splitPair)):  # should be 0 to 1
-                                                        splitPair[i] = string.strip(splitPair[i])
+                                                        splitPair[i] = splitPair[i].strip()
                                                     if len(splitPair) == 2:
                                                         instantaneousListOfData.append(splitPair)
 
