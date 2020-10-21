@@ -62,7 +62,7 @@ class BagWorker(QtCore.QObject):
             cmd += self.optionArguments
 
         #launch the command
-        self.bagPlayProcess = pexpect.spawn(cmd, timeout=None, logfile=sys.stdout)
+        self.bagPlayProcess = pexpect.spawn(cmd, timeout=None, logfile=sys.stdout, encoding="utf-8")
 
         #initialisation of temporary variables
         line = ""

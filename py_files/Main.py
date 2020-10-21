@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 #
 # File: Main.py
 # Author: Paul Buzaud
@@ -36,7 +36,7 @@ class fileBrowser(QtWidgets.QFileDialog):
     def __init__(self):
         """Initialization of the class and hiding of the useless elements"""
         QtWidgets.QFileDialog.__init__(self)
-
+        self.setOptions(QtWidgets.QFileDialog.DontUseNativeDialog)
         #Find the irrelevant parts of the QFileDialog
         buttonBox = self.findChild(QtWidgets.QDialogButtonBox)
         lineEdit = self.findChild(QtWidgets.QLineEdit)
@@ -45,7 +45,7 @@ class fileBrowser(QtWidgets.QFileDialog):
         tree = self.findChildren(QtWidgets.QTreeView)
 
         #Change the selection mode of the tree widget
-        file_tree =  tree[0]
+        file_tree = tree[0]
         file_tree.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         #Hide the irrelevant part of the QFileDialog
@@ -210,9 +210,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                     bagItem = bagItem.parent()
 
                 #if it exists some bag with the same topic contents
-                if self.dictSameTypesItem[bagItem] != []:
+                if self.dictSameTypesItem[str(bagItem)] != []:
                     #find the correlated current seleted item in theses bags and set them selected
-                    for similarBagItem in self.dictSameTypesItem[bagItem]:
+                    for similarBagItem in self.dictSameTypesItem[str(bagItem)]:
                         if levelOfItem == 2:
                             for topicIndex in range(similarBagItem.childCount()):
                                 topicItem = similarBagItem.child(topicIndex)
@@ -373,7 +373,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
             #find the similar bags items and update the data structure
             listSimilarItem = self.findSimilarBagTypeInTree(bagItem.text(0))
-            self.dictSameTypesItem[bagItem] = listSimilarItem
+            print(str(bagItem))
+            self.dictSameTypesItem[str(bagItem)] = listSimilarItem
 
             self.dictBagsInfos[filePath] = [self.bagSize , bag.get_end_time()-bag.get_start_time(), bag.get_start_time(), bag.get_end_time()]
 
@@ -385,7 +386,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                 tempSimilarList += listSimilarItem
                 itemIndex = tempSimilarList .index(similarItem)
                 tempSimilarList.pop(itemIndex)
-                self.dictSameTypesItem[similarItem] = tempSimilarList
+                self.dictSameTypesItem[str(similarItem)] = tempSimilarList
 
 
             #update ui elements at the end of the loading
@@ -502,7 +503,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                             if (currentItem in self.treeSelectedTopics.selectedItems()):
 
                                 #Create a new CSV file for each topic
-                                filename = folder + '/'+ bagName+"_"+ string.replace(topicName, '/', '_slash_') + '.csv'
+                                filename = folder + '/'+ bagName+"_"+ topicName.replace( '/', '_slash_') + '.csv'
                                 self.labelProgress.setText("Save csv file " + filename)
                                 with open(filename, 'w+') as csvfile:
                                     fileCreated = True
@@ -521,12 +522,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                                         self.progressBar.setValue(int((float(
                                             indice) / topicSize * 100)))
                                         msgString = str(msg)
-                                        msgList = string.split(msgString, '\n')
+                                        msgList = msgString.split('\n')
                                         instantaneousListOfData = []
                                         for nameValuePair in msgList:
-                                            splitPair = string.split(nameValuePair, ':')
+                                            splitPair = nameValuePair.split(':')
                                             for i in range(len(splitPair)):  # should be 0 to 1
-                                                splitPair[i] = string.strip(splitPair[i])
+                                                splitPair[i] = splitPair[i].strip()
                                             if len(splitPair) == 2:
                                                 instantaneousListOfData.append(splitPair)
                                         # write the first row from the first element of each pair
@@ -573,17 +574,17 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                                             msgString = str(msg)
 
                                             #Split the tf message thanks to the transformation separator and store every transformations messages in a list
-                                            transformList = string.split(msgString, '  - \n')
+                                            transformList = msgString.split('  - \n')
                                             transformList = transformList[1:]
 
                                             #iterate on all the transformations messages
                                             for indexTransform, transformString in enumerate(transformList):
-                                                msgList = string.split(transformString, '\n')
+                                                msgList = transformString.split('\n')
                                                 instantaneousListOfData = []
                                                 for nameValuePair in msgList:
-                                                    splitPair = string.split(nameValuePair, ':')
+                                                    splitPair = nameValuePair.split( ':')
                                                     for i in range(len(splitPair)):  # should be 0 to 1
-                                                        splitPair[i] = string.strip(splitPair[i])
+                                                        splitPair[i] = splitPair[i].strip()
                                                     if len(splitPair) == 2:
                                                         instantaneousListOfData.append(splitPair)
 
