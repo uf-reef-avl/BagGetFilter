@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1170</width>
+    <width>1189</width>
     <height>657</height>
    </rect>
   </property>
@@ -16,13 +16,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="10" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QCheckBox" name="checkCrossSelection">
-       <property name="text">
-        <string>Matching Bag/Topic Highlighting</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QCheckBox" name="checkLoad">
        <property name="text">
@@ -40,6 +33,27 @@
       <widget class="QCheckBox" name="checkMeta">
        <property name="text">
         <string>Remove beginning and ending metadata from bag</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkEnableTF">
+       <property name="text">
+        <string>Enable tf in bags loading</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_topics_selected">
+       <property name="text">
+        <string> topics selected:0</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="buttonPlots">
+       <property name="text">
+        <string>Show plots</string>
        </property>
       </widget>
      </item>
@@ -96,6 +110,19 @@
         </widget>
        </item>
        <item>
+        <widget class="QLineEdit" name="lineResearch">
+         <property name="inputMask">
+          <string/>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="placeholderText">
+          <string>Research field: topic|topic|topic ...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="buttonClipboard">
          <property name="text">
           <string>Show Clipboard</string>
@@ -141,6 +168,9 @@
         </property>
        </column>
       </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="plotLayout"/>
      </item>
     </layout>
    </item>

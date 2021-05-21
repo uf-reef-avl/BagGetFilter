@@ -27,11 +27,13 @@ import rosbag, sys, csv, os, rospy
 import string
 from tf2_ros import TFMessage
 from std_msgs.msg import String
+from MplCanvas import MplCanvas
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 class fileBrowser(QtWidgets.QFileDialog):
     """This class inherits from the QFileDialog class and defines the browser part of the main window"""
-
 
     def __init__(self):
         """Initialization of the class and hiding of the useless elements"""
@@ -57,6 +59,8 @@ class fileBrowser(QtWidgets.QFileDialog):
         self.setNameFilter("bag (*.bag *.)")
 
         self.setDirectory(str(os.getcwd()))
+
+
 
 
     def accept(self):
@@ -89,6 +93,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.label.setText("Specify the suffix of your filtered bag name")
         self.buttonLoadBagPath.setText("Clear Bags")
         self.setTreeSize()
+        self.mplCanvas = MplCanvas(self)
+        self.plotLayout.addWidget(self.mplCanvas)
 
 
         # Paring buttons to functions
@@ -97,9 +103,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.buttonQuit.clicked.connect(self.saveCsvFile)
         self.buttonPlayBag.clicked.connect(self.playBag)
         self.buttonClipboard.clicked.connect(self.showClipboard)
-        self.treeSelectedTopics.itemSelectionChanged.connect(self.multiTypeSelection)
+        self.buttonPlots.clicked.connect(self.togglePlots)
+        self.mplCanvas.button.clicked.connect(self.showPlots)
         self.treeSelectedTopics.itemDoubleClicked.connect(self.editBagTimeStamp)
         self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
+        self.lineResearch.textChanged.connect(self.changeTextlineResearch)
+        self.treeSelectedTopics.itemSelectionChanged.connect(self.onSelectionChanged)
 
         #Activates the drag and drop functionality of the window
         self.setAcceptDrops(True)
@@ -108,15 +117,180 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
         #Initializes data structures
         self.bagSize = 0
-        #tfDict[bagname] = [tf_in_tree_string,possible_transformations_messages_index]
         self.tfDict = {}
-        # dictSameTypesItem[bagname] = [list of similar bag Item]
-        self.dictSameTypesItem = {}
-        # listOfTopics[bagname] = [list of topics name]
         self.listOfTopics = {}
-        # listOfTopics[bagname] = [bag number of message, bag duration, start time, end time]
         self.dictBagsInfos = {}
 
+    def togglePlots(self):
+        self.mplCanvas.setHidden(not self.mplCanvas.isHidden())
+
+    def showPlots(self):
+        self.loadDataInsidePlot()
+        self.mplCanvas.plot()
+
+    def loadDataInsidePlot(self):
+        """Load data inside plot"""
+        self.mplCanvas.x_dict={}
+        self.mplCanvas.y_dict = {}
+        self.mplCanvas.label_dict = {}
+
+        # Disable the functions buttons
+        self.enableDisableButton(False)
+
+        # retrieve all the selected informations from the topics tree widget
+        bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
+
+        if meaningfullItemSelected:
+            # iterate on all the bags index selected
+            for bagIndex in bagSelection:
+                # Load the bag
+                bag = rosbag.Bag(str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)))
+                bagContents = bag.read_messages()
+                bagName = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
+
+                # Update ui elements
+                self.labelProgress.show()
+                self.progressBar.show()
+                self.progressBar.setValue(0.)
+
+
+                # iterate on all topics selected by the user
+                for index, topicName in enumerate(
+                        self.listOfTopics[str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))]):
+                    topicSize = bag.get_message_count(topicName)
+                    currentItem = self.treeSelectedTopics.topLevelItem(bagIndex).child(index)
+
+                    # if the current topic is not a tf topic
+                    if currentItem.text(1) != "/tf":
+
+                        # if the current topic has been selected by the user
+                        if (currentItem in self.treeSelectedTopics.selectedItems()):
+
+                            firstIteration = True  # allows header row
+                            indice = 0
+                            # Iterate over all messages of the current bag
+                            for subtopic, msg, t in bag.read_messages(
+                                    topicName):  # for each instant in time that has data for topicName
+                                # parse data from this instant, which is of the form of multiple lines of "Name: value\n"
+                                #	- put it in the form of a list of 2-element lists
+                                indice += 1
+
+                                # update the progress bar
+                                self.progressBar.setValue(int((float(
+                                    indice) / topicSize * 100)))
+                                msgString = str(msg)
+                                msgList = msgString.split('\n')
+                                instantaneousListOfData = []
+                                for nameValuePair in msgList:
+                                    splitPair = nameValuePair.split(':')
+                                    for i in range(len(splitPair)):  # should be 0 to 1
+                                        splitPair[i] = splitPair[i].strip()
+                                    if len(splitPair) == 2:
+                                        instantaneousListOfData.append(splitPair)
+                                # write the first row from the first element of each pair
+                                if firstIteration:  # header
+                                    headers = ["rosbagTimestamp"]  # first column header
+                                    for pair in instantaneousListOfData:
+                                        headers.append(pair[0])
+                                    filewriter.writerow(headers)
+                                    firstIteration = False
+                                # write the value from each pair to the file
+                                values = [str(t)]  # first column will have rosbag timestamp
+                                for pair in instantaneousListOfData:
+                                    values.append(pair[1])
+                                filewriter.writerow(values)
+                    else:
+                        # If the current topic is a tf topic
+                        # Iterate over the tf child of this topic
+                        for i in range(currentItem.childCount()):
+                            tfItem = currentItem.child(i)
+
+                            # if the current tf topic has been selected by the user
+                            if (tfItem in self.treeSelectedTopics.selectedItems()):
+
+                                # Retrieve the frame id and the child id from the tf item
+                                frameTfTopicString = str(tfItem.text(2)).split('|')
+                                frameId = frameTfTopicString[0].split(':')[1].strip()
+                                childFrameId = frameTfTopicString[1].split(':')[1].strip()
+
+                                # Create a new CSV file for each topic
+                                filename = folder + '/' + bagName.replace(".",
+                                                                          "_") + '_tf_frame_id' + frameId.replace(
+                                    '/', '_slash_') + "_child_frame_id_" + childFrameId.replace('/',
+                                                                                                '_slash_') + '.csv'
+                                self.labelProgress.setText("Save csv file " + filename)
+                                with open(filename, 'w+') as csvfile:
+                                    fileCreated = True
+                                    filewriter = csv.writer(csvfile, delimiter=',')
+                                    firstIteration = True  # allows header row
+                                    indiceTf = 0
+                                    for subtopic, msg, t in bag.read_messages(
+                                            topicName):  # for each instant in time that has data for topicName
+                                        # parse data from this instant, which is of the form of multiple lines of "Name: value\n"
+                                        #	- put it in the form of a list of 2-element lists
+                                        indiceTf += 1
+                                        self.progressBar.setValue(int((float(
+                                            indiceTf) / topicSize) * 100))
+                                        msgString = str(msg)
+
+                                        # Split the tf message thanks to the transformation separator and store every transformations messages in a list
+                                        transformList = msgString.split('  - \n')
+                                        transformList = transformList[1:]
+
+                                        # iterate on all the transformations messages
+                                        for indexTransform, transformString in enumerate(transformList):
+                                            msgList = transformString.split('\n')
+                                            instantaneousListOfData = []
+                                            for nameValuePair in msgList:
+                                                splitPair = nameValuePair.split(':')
+                                                for i in range(len(splitPair)):  # should be 0 to 1
+                                                    splitPair[i] = splitPair[i].strip()
+                                                if len(splitPair) == 2:
+                                                    instantaneousListOfData.append(splitPair)
+
+                                            # write the first row from the first element of each pair
+                                            if firstIteration:  # header
+                                                headers = ["rosbagTimestamp"]  # first column header
+                                                for pair in instantaneousListOfData:
+                                                    headers.append(pair[0])
+                                                filewriter.writerow(headers)
+                                                firstIteration = False
+
+                                            if instantaneousListOfData[5][1][1:-1] == frameId and \
+                                                    instantaneousListOfData[6][1][1:-1] == childFrameId:
+                                                values = [str(t)]  # first column will have rosbag timestamp
+                                                for pair in instantaneousListOfData:
+                                                    values.append(pair[1])
+                                                filewriter.writerow(values)
+
+                # Close the bag
+                bag.close()
+
+                # Update ui elements
+                self.labelProgress.hide()
+                self.progressBar.hide()
+
+        # Reenable the function button of the ui
+        self.enableDisableButton(True)
+
+
+
+
+    def onSelectionChanged(self):
+        self.label_topics_selected.setText("Topics selected : "+str(len(self.treeSelectedTopics.selectedItems())))
+
+
+    def changeTextlineResearch(self,text):
+        self.treeSelectedTopics.clearSelection()
+        text_list = text.split("|")
+        items = []
+        for topics in text_list:
+            items = items +  self.treeSelectedTopics.findItems(topics, QtCore.Qt.MatchContains|QtCore.Qt.MatchRecursive,1)
+            items = items + self.treeSelectedTopics.findItems(topics,
+                                                              QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive, 2)
+        # items = items + self.treeSelectedTopics.findItems(text, QtCore.Qt.MatchContains,2)
+        for item in items:
+            item.setSelected(True)
 
     def editBagTimeStamp(self, item, column):
         item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
@@ -194,42 +368,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
 
 
-    def multiTypeSelection(self):
-        """Used to simultaneously select multiple topics from bags that contain the same topics"""
-
-        #Check if this functionality has been activated by the user
-        if self.checkCrossSelection.checkState() == 2:
-            for item in self.treeSelectedTopics.selectedItems():
-                self.treeSelectedTopics
-
-                #Find the deep level of the current selected item and his attached bag item
-                bagItem = item
-                levelOfItem = 0
-                while bagItem.parent() != None:
-                    levelOfItem += 1
-                    bagItem = bagItem.parent()
-
-                #if it exists some bag with the same topic contents
-                if self.dictSameTypesItem[str(bagItem)] != []:
-                    #find the correlated current seleted item in theses bags and set them selected
-                    for similarBagItem in self.dictSameTypesItem[str(bagItem)]:
-                        if levelOfItem == 2:
-                            for topicIndex in range(similarBagItem.childCount()):
-                                topicItem = similarBagItem.child(topicIndex)
-                                if topicItem.text(1) == '/tf':
-                                    for tfIndex in range(topicItem.childCount()):
-                                        tfItem = topicItem.child(tfIndex)
-                                        if tfItem.text(levelOfItem) == item.text(levelOfItem):
-                                            tfItem.setSelected(True)
-                        elif levelOfItem == 1:
-                            for topicIndex in range(similarBagItem.childCount()):
-                                topicItem = similarBagItem.child(topicIndex)
-                                if topicItem.text(levelOfItem) == item.text(levelOfItem):
-                                    topicItem.setSelected(True)
-                        elif levelOfItem == 0:
-                            similarBagItem.setSelected(True)
-
-
     def setTreeSize(self):
         """This function corrects the column header sizes of the tree widget which displays the topics and bags topics"""
         self.treeSelectedTopics.setColumnWidth(0, 2*self.width() / 12.)
@@ -237,36 +375,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.treeSelectedTopics.setColumnWidth(2, 2*self.width() / 12.)
         self.treeSelectedTopics.setColumnWidth(3, 2 * self.width() / 12.)
 
-
-    def findSimilarBagTypeInTree(self, bagName):
-        """Return a list of bag items with the same topics as the bag argument"""
-
-        similarTypeItem = []
-
-        #Iterate on all the differents bag names
-        for bag in self.listOfTopics.keys():
-            similaritie = True
-            if bagName != bag:
-
-                #if there is a difference between at least one topic name in the current bag and the bag set as argument then set the similaritie to false
-                for topic in self.listOfTopics[bag]:
-                    if topic not in self.listOfTopics[bagName]:
-                        similaritie = False
-
-                # if there is a difference between at least one tf topic name in the current bag and the bag set as argument then set the similaritie to false
-                for tfTopic in self.tfDict[bag][0]:
-                    if tfTopic not in self.tfDict[bagName][0]:
-                        similaritie = False
-
-                #if there is not the same number of topics in the bag set as argument and in the current bag then set the similaritie to false
-                if (len(self.tfDict[bag][0]) != len(self.tfDict[bagName][0])) or (len(self.listOfTopics[bag]) != len(self.listOfTopics[bagName])):
-                    similaritie = False
-
-                #if the contents of the current bag and the bag set as argument are similare then append this current bag to the similar item list
-                if similaritie:
-                    similarTypeItem.append(self.treeSelectedTopics.findItems(bag,QtCore.Qt.MatchExactly,0)[0])
-
-        return similarTypeItem
 
 
     def showClipboard(self):
@@ -283,7 +391,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.textClipboard.clear()
         self.listOfTopics = {}
         self.tfDict = {}
-        self.dictSameTypesItem = {}
+        # self.dictSameTypesItem = {}
         self.dictBagsInfos = {}
 
 
@@ -298,7 +406,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
     def loadBag(self, filename):
         """Read the topics contained in the bag as an argument and update the bag/topic tree widget and the data structures """
-
         #Disable the functions buttons
         self.enableDisableButton(False)
 
@@ -311,83 +418,76 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
         #Check if the specified file is a bag
         if filePath[-4:] == ".bag":
+            self.labelProgress.setText("Loading Bag " + filePath)
+            self.labelProgress.show()
+            self.progressBar.show()
+            self.progressBar.setValue(0.)
             #Create the bag item in the bag/topic tree widget
             bagItem = QtWidgets.QTreeWidgetItem()
             bagItem.setText(0,filePath)
-
-
             #Load the bag
             bag = rosbag.Bag(filePath)
             bagContents = bag.read_messages()
             bagName = bag.filename
             bagItem.setText(3, str(bag.get_start_time()))
-
             #Update the ui elements and the data structures
             self.listOfTopics[filePath] = []
-            self.labelProgress.setText("Loading Bag "+ filePath)
-            self.labelProgress.show()
-            self.progressBar.show()
-            self.progressBar.setValue(0.)
             self.bagSize = bag.get_message_count()
             self.tfDict[filePath] = [[], []]
+            if self.checkEnableTF.checkState() == 2:
+                #i variable is  used to update the progress bar
+                i = 0.
+                #Read the bag contents
+                for topic, msg, t in bagContents:
+                    self.progressBar.setValue(int(float(i) / self.bagSize * 100))
+                    i += 1
 
-            #i variable is  used to update the progress bar
-            i = 0.
-            #Read the bag contents
-            for topic, msg, t in bagContents:
-                self.progressBar.setValue(int(float(i) / self.bagSize * 100))
-                i += 1
+                    #If the current topic hasn't been loaded in the tree widget then add it
+                    if topic not in self.listOfTopics[filePath]:
+                        item = QtWidgets.QTreeWidgetItem()
+                        item.setText(1,topic)
+                        bagItem.addChild(item)
+                        self.listOfTopics[filePath].append(topic)
+                        if topic == "/tf":
+                            tf_item  = item
 
-                #If the current topic hasn't been loaded in the tree widget then add it
-                if topic not in self.listOfTopics[filePath]:
+                    #if the current topic is tf, check if the frame and the child frame of this transformation have been added to the data structure and to the tree widget; if not then add it
+                    if topic ==  "/tf":
+                        try:
+                            #in every tf msg, there can be multiples transformations messages.This iteration goes throught all theses transformations messages and save them in data structures
+                            for index in range(len(msg.transforms)):
+                                msg_string = "frame_id : "+str(msg.transforms[index].header.frame_id)+" | child_frame_id : "+str(msg.transforms[index].child_frame_id)
+                                stringId = self.tfDict[filePath][0].index(msg_string) if msg_string in self.tfDict[filePath][0] else -1
+                                if msg_string not in self.tfDict[filePath][0]:
+                                    self.tfDict[filePath][0].append(msg_string)
+                                    self.tfDict[filePath][1].append([index])
+                                    sub_item = QtWidgets.QTreeWidgetItem()
+                                    sub_item.setText(2,msg_string)
+                                    tf_item.addChild(sub_item)
+                                #register each index of transformation messages
+                                elif stringId != -1 and index not in self.tfDict[filePath][1][stringId]:
+                                    self.tfDict[filePath][1][stringId].append(index)
+                        except:
+                            pass
+                bag.close()
+            elif self.checkEnableTF.checkState() == 0:
+                topics = bag.get_type_and_topic_info()[1].keys()
+                for topic in topics:
                     item = QtWidgets.QTreeWidgetItem()
-                    item.setText(1,topic)
+                    item.setText(1, topic)
                     bagItem.addChild(item)
                     self.listOfTopics[filePath].append(topic)
-                    if topic == "/tf":
-                        tf_item  = item
-
-                #if the current topic is tf, check if the frame and the child frame of this transformation have been added to the data structure and to the tree widget; if not then add it
-                if topic ==  "/tf":
-                    try:
-                        #in every tf msg, there can be multiples transformations messages.This iteration goes throught all theses transformations messages and save them in data structures
-                        for index in range(len(msg.transforms)):
-                            msg_string = "frame_id : "+str(msg.transforms[index].header.frame_id)+" | child_frame_id : "+str(msg.transforms[index].child_frame_id)
-                            stringId = self.tfDict[filePath][0].index(msg_string) if msg_string in self.tfDict[filePath][0] else -1
-                            if msg_string not in self.tfDict[filePath][0]:
-                                self.tfDict[filePath][0].append(msg_string)
-                                self.tfDict[filePath][1].append([index])
-                                sub_item = QtWidgets.QTreeWidgetItem()
-                                sub_item.setText(2,msg_string)
-                                tf_item.addChild(sub_item)
-                            #register each index of transformation messages
-                            elif stringId != -1 and index not in self.tfDict[filePath][1][stringId]:
-                                self.tfDict[filePath][1][stringId].append(index)
-                    except:
-                        pass
-            bag.close()
 
             #update the bag/topic tree widget
             self.treeSelectedTopics.addTopLevelItem(bagItem)
             self.treeSelectedTopics.expandAll()
+            self.treeSelectedTopics.setSortingEnabled(True)
+            self.treeSelectedTopics.sortByColumn(1,QtCore.Qt.AscendingOrder)
+            self.treeSelectedTopics.sortByColumn(2, QtCore.Qt.AscendingOrder)
+            self.treeSelectedTopics.setSortingEnabled(False)
 
-            #find the similar bags items and update the data structure
-            listSimilarItem = self.findSimilarBagTypeInTree(bagItem.text(0))
-            print(str(bagItem))
-            self.dictSameTypesItem[str(bagItem)] = listSimilarItem
 
             self.dictBagsInfos[filePath] = [self.bagSize , bag.get_end_time()-bag.get_start_time(), bag.get_start_time(), bag.get_end_time()]
-
-
-            #propagate the found similarities in the similaritie dict for the others bags items
-            for similarItem in listSimilarItem:
-                tempSimilarList = []
-                tempSimilarList.append(bagItem)
-                tempSimilarList += listSimilarItem
-                itemIndex = tempSimilarList .index(similarItem)
-                tempSimilarList.pop(itemIndex)
-                self.dictSameTypesItem[str(similarItem)] = tempSimilarList
-
 
             #update ui elements at the end of the loading
             self.progressBar.hide()
@@ -401,6 +501,12 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
         #Reenable the function button of the ui
         self.enableDisableButton(True)
+
+        #changing directory
+        filename_list = filename.split("/")
+        filename_list = filename_list[:-1]
+        directory = "/".join(filename_list)
+        self.fileDialog.setDirectory(directory)
 
 
     def bagSelected(self):
@@ -467,14 +573,11 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         #retrieve all the selected informations from the topics tree widget
         bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
 
-
         if meaningfullItemSelected:
             #let the user choose the directory where he wants to store the csv file
-            folder = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose a folder to store your csv topics", self.fileDialog.directoryUrl().path())
-
+            folder =  QtWidgets.QFileDialog.getExistingDirectory(self, "Choose a folder to store your csv topics", self.fileDialog.directoryUrl().path())
             #check if the user has chosen a valid folder
             if folder:
-
                 #iterate on all the bags index selected
                 for bagIndex in bagSelection:
 
