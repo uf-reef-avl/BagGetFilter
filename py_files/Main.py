@@ -24,12 +24,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PlayBagWindow import BagPlay
 import BagFilterDesign
 import rosbag, sys, csv, os, rospy
-import string
+import subprocess,yaml
 from tf2_ros import TFMessage
 from std_msgs.msg import String
 from MplCanvas import MplCanvas
-import matplotlib
-import matplotlib.pyplot as plt
+from Workers import CSV_Worker, BagFilter_Worker, plot_loader
+import pandas as pd
+
 
 
 class fileBrowser(QtWidgets.QFileDialog):
@@ -95,6 +96,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.setTreeSize()
         self.mplCanvas = MplCanvas(self)
         self.plotLayout.addWidget(self.mplCanvas)
+        self.mplCanvas.setHidden(True)
 
 
         # Paring buttons to functions
@@ -104,7 +106,8 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.buttonPlayBag.clicked.connect(self.playBag)
         self.buttonClipboard.clicked.connect(self.showClipboard)
         self.buttonPlots.clicked.connect(self.togglePlots)
-        self.mplCanvas.button.clicked.connect(self.showPlots)
+        self.mplCanvas.button_load.clicked.connect(self.loadDataInsidePlot)
+        self.mplCanvas.button_plot.clicked.connect(self.showPlots)
         self.treeSelectedTopics.itemDoubleClicked.connect(self.editBagTimeStamp)
         self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
         self.lineResearch.textChanged.connect(self.changeTextlineResearch)
@@ -120,19 +123,42 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.tfDict = {}
         self.listOfTopics = {}
         self.dictBagsInfos = {}
+        self.worker_dict = {}
+        self.thread_dict = {}
+        self.listOfFilteredToLoadBags = []
+        self.multiThreadedProgression = [0.,0.] #indice 0 is sum of progression, indice one is number of message
 
     def togglePlots(self):
         self.mplCanvas.setHidden(not self.mplCanvas.isHidden())
 
     def showPlots(self):
-        self.loadDataInsidePlot()
         self.mplCanvas.plot()
 
+
+    @QtCore.pyqtSlot(str,str,dict)
+    def killPlotThread(self, id,bag_name,dict_data):
+        del self.worker_dict[id]
+        self.thread_dict[id].quit()
+        self.thread_dict[id].wait()
+        del self.thread_dict[id]
+
+        for topic in dict_data.keys():
+            panda_data_frame =  pd.DataFrame(dict_data[topic][1],
+
+                   columns=dict_data[topic][0])
+            self.mplCanvas.load_data_topic( bag_name, topic, dict_data[topic][0], panda_data_frame)
+        #if last bag habe been filtered and no more thread, reload the bags and reenable the ui
+        if len(self.thread_dict.keys()) == 0:
+            # update ui elements
+            self.labelProgress.hide()
+            self.progressBar.hide()
+            # Reenable the function button of the ui
+            self.enableDisableButton(True)
+
+
     def loadDataInsidePlot(self):
-        """Load data inside plot"""
-        self.mplCanvas.x_dict={}
-        self.mplCanvas.y_dict = {}
-        self.mplCanvas.label_dict = {}
+
+        """Load the topic in csv format"""
 
         # Disable the functions buttons
         self.enableDisableButton(False)
@@ -141,137 +167,36 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
 
         if meaningfullItemSelected:
-            # iterate on all the bags index selected
-            for bagIndex in bagSelection:
-                # Load the bag
-                bag = rosbag.Bag(str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)))
-                bagContents = bag.read_messages()
-                bagName = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
-
                 # Update ui elements
                 self.labelProgress.show()
                 self.progressBar.show()
                 self.progressBar.setValue(0.)
+                self.multiThreadedProgression = [0, 0]
+                # iterate on all the bags index selected
+                for bagIndex in bagSelection:
+                    tempThread = QtCore.QThread()
+                    tempThread.start()
+                    bag_filename = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))
+                    bag_name = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
+                    loader = plot_loader(str(tempThread), bag_filename, bag_name, bagIndex,
+                                            self.listOfTopics, self.treeSelectedTopics)
+                    loader.progressSignal.connect(self.updateProgressBar)
+                    loader.finishThread.connect(self.killPlotThread)
+                    loader.moveToThread(tempThread)
+                    loader.start.emit()
+                    self.thread_dict[str(tempThread)] = tempThread
+                    self.worker_dict[str(tempThread)] = loader
 
+                    # if there is no item in the topic tree widget and the user try to launch the csv exportation
+        elif self.treeSelectedTopics.topLevelItemCount() == 0:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
+        # if no tf topics or meaningful topic has been selected
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No topics selected")
 
-                # iterate on all topics selected by the user
-                for index, topicName in enumerate(
-                        self.listOfTopics[str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))]):
-                    topicSize = bag.get_message_count(topicName)
-                    currentItem = self.treeSelectedTopics.topLevelItem(bagIndex).child(index)
+        # Disable the functions buttons
+        self.enableDisableButton(False)
 
-                    # if the current topic is not a tf topic
-                    if currentItem.text(1) != "/tf":
-
-                        # if the current topic has been selected by the user
-                        if (currentItem in self.treeSelectedTopics.selectedItems()):
-
-                            firstIteration = True  # allows header row
-                            indice = 0
-                            # Iterate over all messages of the current bag
-                            for subtopic, msg, t in bag.read_messages(
-                                    topicName):  # for each instant in time that has data for topicName
-                                # parse data from this instant, which is of the form of multiple lines of "Name: value\n"
-                                #	- put it in the form of a list of 2-element lists
-                                indice += 1
-
-                                # update the progress bar
-                                self.progressBar.setValue(int((float(
-                                    indice) / topicSize * 100)))
-                                msgString = str(msg)
-                                msgList = msgString.split('\n')
-                                instantaneousListOfData = []
-                                for nameValuePair in msgList:
-                                    splitPair = nameValuePair.split(':')
-                                    for i in range(len(splitPair)):  # should be 0 to 1
-                                        splitPair[i] = splitPair[i].strip()
-                                    if len(splitPair) == 2:
-                                        instantaneousListOfData.append(splitPair)
-                                # write the first row from the first element of each pair
-                                if firstIteration:  # header
-                                    headers = ["rosbagTimestamp"]  # first column header
-                                    for pair in instantaneousListOfData:
-                                        headers.append(pair[0])
-                                    filewriter.writerow(headers)
-                                    firstIteration = False
-                                # write the value from each pair to the file
-                                values = [str(t)]  # first column will have rosbag timestamp
-                                for pair in instantaneousListOfData:
-                                    values.append(pair[1])
-                                filewriter.writerow(values)
-                    else:
-                        # If the current topic is a tf topic
-                        # Iterate over the tf child of this topic
-                        for i in range(currentItem.childCount()):
-                            tfItem = currentItem.child(i)
-
-                            # if the current tf topic has been selected by the user
-                            if (tfItem in self.treeSelectedTopics.selectedItems()):
-
-                                # Retrieve the frame id and the child id from the tf item
-                                frameTfTopicString = str(tfItem.text(2)).split('|')
-                                frameId = frameTfTopicString[0].split(':')[1].strip()
-                                childFrameId = frameTfTopicString[1].split(':')[1].strip()
-
-                                # Create a new CSV file for each topic
-                                filename = folder + '/' + bagName.replace(".",
-                                                                          "_") + '_tf_frame_id' + frameId.replace(
-                                    '/', '_slash_') + "_child_frame_id_" + childFrameId.replace('/',
-                                                                                                '_slash_') + '.csv'
-                                self.labelProgress.setText("Save csv file " + filename)
-                                with open(filename, 'w+') as csvfile:
-                                    fileCreated = True
-                                    filewriter = csv.writer(csvfile, delimiter=',')
-                                    firstIteration = True  # allows header row
-                                    indiceTf = 0
-                                    for subtopic, msg, t in bag.read_messages(
-                                            topicName):  # for each instant in time that has data for topicName
-                                        # parse data from this instant, which is of the form of multiple lines of "Name: value\n"
-                                        #	- put it in the form of a list of 2-element lists
-                                        indiceTf += 1
-                                        self.progressBar.setValue(int((float(
-                                            indiceTf) / topicSize) * 100))
-                                        msgString = str(msg)
-
-                                        # Split the tf message thanks to the transformation separator and store every transformations messages in a list
-                                        transformList = msgString.split('  - \n')
-                                        transformList = transformList[1:]
-
-                                        # iterate on all the transformations messages
-                                        for indexTransform, transformString in enumerate(transformList):
-                                            msgList = transformString.split('\n')
-                                            instantaneousListOfData = []
-                                            for nameValuePair in msgList:
-                                                splitPair = nameValuePair.split(':')
-                                                for i in range(len(splitPair)):  # should be 0 to 1
-                                                    splitPair[i] = splitPair[i].strip()
-                                                if len(splitPair) == 2:
-                                                    instantaneousListOfData.append(splitPair)
-
-                                            # write the first row from the first element of each pair
-                                            if firstIteration:  # header
-                                                headers = ["rosbagTimestamp"]  # first column header
-                                                for pair in instantaneousListOfData:
-                                                    headers.append(pair[0])
-                                                filewriter.writerow(headers)
-                                                firstIteration = False
-
-                                            if instantaneousListOfData[5][1][1:-1] == frameId and \
-                                                    instantaneousListOfData[6][1][1:-1] == childFrameId:
-                                                values = [str(t)]  # first column will have rosbag timestamp
-                                                for pair in instantaneousListOfData:
-                                                    values.append(pair[1])
-                                                filewriter.writerow(values)
-
-                # Close the bag
-                bag.close()
-
-                # Update ui elements
-                self.labelProgress.hide()
-                self.progressBar.hide()
-
-        # Reenable the function button of the ui
-        self.enableDisableButton(True)
 
 
 
@@ -370,10 +295,10 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
     def setTreeSize(self):
         """This function corrects the column header sizes of the tree widget which displays the topics and bags topics"""
-        self.treeSelectedTopics.setColumnWidth(0, 2*self.width() / 12.)
-        self.treeSelectedTopics.setColumnWidth(1, 2*self.width() / 12.)
-        self.treeSelectedTopics.setColumnWidth(2, 2*self.width() / 12.)
-        self.treeSelectedTopics.setColumnWidth(3, 2 * self.width() / 12.)
+        self.treeSelectedTopics.setColumnWidth(0, self.treeSelectedTopics.width() / 4.)
+        self.treeSelectedTopics.setColumnWidth(1, self.treeSelectedTopics.width() / 4.)
+        self.treeSelectedTopics.setColumnWidth(2, self.treeSelectedTopics.width() / 4.)
+        self.treeSelectedTopics.setColumnWidth(3, self.treeSelectedTopics.width() / 4.)
 
 
 
@@ -422,19 +347,23 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
             self.labelProgress.show()
             self.progressBar.show()
             self.progressBar.setValue(0.)
-            #Create the bag item in the bag/topic tree widget
+            # Create the bag item in the bag/topic tree widget
             bagItem = QtWidgets.QTreeWidgetItem()
-            bagItem.setText(0,filePath)
-            #Load the bag
-            bag = rosbag.Bag(filePath)
-            bagContents = bag.read_messages()
-            bagName = bag.filename
-            bagItem.setText(3, str(bag.get_start_time()))
-            #Update the ui elements and the data structures
+            bagItem.setText(0, filePath)
             self.listOfTopics[filePath] = []
-            self.bagSize = bag.get_message_count()
             self.tfDict[filePath] = [[], []]
             if self.checkEnableTF.checkState() == 2:
+                # Load the bag
+                self.labelProgress.setText("Loading bag into baggetfilter " + filePath + ", it can take time ...")
+                self.progressBar.setValue(50)
+                bag = rosbag.Bag(filePath)
+                self.progressBar.setValue(95)
+                self.labelProgress.setText("Loading TF of " + filePath)
+                bagContents = bag.read_messages()
+                bagName = bag.filename
+                bagItem.setText(3, str(bag.get_start_time()))
+                # Update the ui elements and the data structures
+                self.bagSize = bag.get_message_count()
                 #i variable is  used to update the progress bar
                 i = 0.
                 #Read the bag contents
@@ -470,13 +399,26 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                         except:
                             pass
                 bag.close()
+                self.dictBagsInfos[filePath] = [self.bagSize, bag.get_end_time() - bag.get_start_time(),
+                                                bag.get_start_time(), bag.get_end_time()]
             elif self.checkEnableTF.checkState() == 0:
-                topics = bag.get_type_and_topic_info()[1].keys()
-                for topic in topics:
+                info_dict = yaml.load(
+                    subprocess.Popen(['rosbag', 'info', '--yaml', filePath], stdout=subprocess.PIPE).communicate()[
+                        0],yaml.Loader)
+
+                # Load the bag
+                bagItem.setText(3, str(info_dict["start"]))
+                # Update the ui elements and the data structures
+
+                self.bagSize = info_dict["messages"]
+
+                for topic in info_dict["topics"]:
                     item = QtWidgets.QTreeWidgetItem()
-                    item.setText(1, topic)
+                    item.setText(1, topic["topic"])
                     bagItem.addChild(item)
-                    self.listOfTopics[filePath].append(topic)
+                    self.listOfTopics[filePath].append(topic["topic"])
+                self.dictBagsInfos[filePath] = [self.bagSize, info_dict["end"]- info_dict["start"],
+                                                info_dict["start"], info_dict["end"]]
 
             #update the bag/topic tree widget
             self.treeSelectedTopics.addTopLevelItem(bagItem)
@@ -487,7 +429,7 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
             self.treeSelectedTopics.setSortingEnabled(False)
 
 
-            self.dictBagsInfos[filePath] = [self.bagSize , bag.get_end_time()-bag.get_start_time(), bag.get_start_time(), bag.get_end_time()]
+
 
             #update ui elements at the end of the loading
             self.progressBar.hide()
@@ -564,167 +506,97 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         return bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected
 
 
+
+    @QtCore.pyqtSlot(str, int)
+    def updateProgressBar(self, text, progression):
+        if text != "":
+            self.labelProgress.setText(text)
+        if progression != -1:
+            self.multiThreadedProgression[0] += progression
+            self.multiThreadedProgression[1] += 1
+            progression_mean = self.multiThreadedProgression[0] / self.multiThreadedProgression[1]
+            self.progressBar.setValue(progression_mean)
+
+    @QtCore.pyqtSlot(str)
+    def killThread(self, id):
+        del self.worker_dict[id]
+        self.thread_dict[id].quit()
+        self.thread_dict[id].wait()
+        del self.thread_dict[id]
+        print("killed")
+        # Update ui elements
+        self.labelProgress.hide()
+        self.progressBar.hide()
+        # Reenable the function button of the ui
+        self.enableDisableButton(True)
+
+
     def saveCsvFile(self):
-        """Save the selected topics in csv files"""
+            """Save the selected topics in csv files"""
 
-        #Disable the functions buttons
-        self.enableDisableButton(False)
+            #Disable the functions buttons
+            self.enableDisableButton(False)
 
-        #retrieve all the selected informations from the topics tree widget
-        bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
+            #retrieve all the selected informations from the topics tree widget
+            bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
 
-        if meaningfullItemSelected:
-            #let the user choose the directory where he wants to store the csv file
-            folder =  QtWidgets.QFileDialog.getExistingDirectory(self, "Choose a folder to store your csv topics", self.fileDialog.directoryUrl().path())
-            #check if the user has chosen a valid folder
-            if folder:
-                #iterate on all the bags index selected
-                for bagIndex in bagSelection:
-
-                    #Load the bag
-                    bag = rosbag.Bag(str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)))
-                    bagContents = bag.read_messages()
-                    bagName = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
-
-                    #Update ui elements
+            if meaningfullItemSelected:
+                #let the user choose the directory where he wants to store the csv file
+                folder =  QtWidgets.QFileDialog.getExistingDirectory(self, "Choose a folder to store your csv topics", self.fileDialog.directoryUrl().path())
+                #check if the user has chosen a valid folder
+                if folder:
+                    # Update ui elements
                     self.labelProgress.show()
                     self.progressBar.show()
                     self.progressBar.setValue(0.)
+                    self.multiThreadedProgression = [0,0]
+                    #iterate on all the bags index selected
+                    for bagIndex in bagSelection:
+                        tempThread = QtCore.QThread()
+                        tempThread.start()
+                        bag_filename = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))
+                        bag_name = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
+                        csv_worker = CSV_Worker(str(tempThread),bag_filename,bag_name,bagIndex,folder,self.listOfTopics,self.treeSelectedTopics)
+                        csv_worker.progressSignal.connect(self.updateProgressBar)
+                        csv_worker.finishThread.connect(self.killThread)
+                        csv_worker.moveToThread(tempThread)
+                        csv_worker.start.emit()
+                        self.thread_dict[str(tempThread)] = tempThread
+                        self.worker_dict[str(tempThread)] = csv_worker
 
-                    #variable to check if the csv files has been created
-                    fileCreated = False
 
-                    #iterate on all topics selected by the user
-                    for index, topicName in enumerate(self.listOfTopics[str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))]):
-                        topicSize = bag.get_message_count(topicName)
-                        currentItem = self.treeSelectedTopics.topLevelItem(bagIndex).child(index)
+                        #if there is no item in the topic tree widget and the user try to launch the csv exportation
+            elif self.treeSelectedTopics.topLevelItemCount() == 0:
+                QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
+            #if no tf topics or meaningful topic has been selected
+            else:
+                QtWidgets.QMessageBox.warning(self, "Warning", "No topics selected")
 
-                        #if the current topic is not a tf topic
-                        if currentItem.text(1) != "/tf":
 
-                            #if the current topic has been selected by the user
-                            if (currentItem in self.treeSelectedTopics.selectedItems()):
+    @QtCore.pyqtSlot(str,str)
+    def killFilterThread(self, id,filename):
+        print(filename)
+        del self.worker_dict[id]
+        self.thread_dict[id].quit()
+        self.thread_dict[id].wait()
+        del self.thread_dict[id]
 
-                                #Create a new CSV file for each topic
-                                filename = folder + '/'+ bagName+"_"+ topicName.replace( '/', '_slash_') + '.csv'
-                                self.labelProgress.setText("Save csv file " + filename)
-                                with open(filename, 'w+') as csvfile:
-                                    fileCreated = True
-                                    filewriter = csv.writer(csvfile, delimiter=',')
-                                    firstIteration = True  # allows header row
-                                    indice = 0
-
-                                    #Iterate over all messages of the current bag
-                                    for subtopic, msg, t in bag.read_messages(
-                                            topicName):  # for each instant in time that has data for topicName
-                                        # parse data from this instant, which is of the form of multiple lines of "Name: value\n"
-                                        #	- put it in the form of a list of 2-element lists
-                                        indice += 1
-
-                                        #update the progress bar
-                                        self.progressBar.setValue(int((float(
-                                            indice) / topicSize * 100)))
-                                        msgString = str(msg)
-                                        msgList = msgString.split('\n')
-                                        instantaneousListOfData = []
-                                        for nameValuePair in msgList:
-                                            splitPair = nameValuePair.split(':')
-                                            for i in range(len(splitPair)):  # should be 0 to 1
-                                                splitPair[i] = splitPair[i].strip()
-                                            if len(splitPair) == 2:
-                                                instantaneousListOfData.append(splitPair)
-                                        # write the first row from the first element of each pair
-                                        if firstIteration:  # header
-                                            headers = ["rosbagTimestamp"]  # first column header
-                                            for pair in instantaneousListOfData:
-                                                headers.append(pair[0])
-                                            filewriter.writerow(headers)
-                                            firstIteration = False
-                                        # write the value from each pair to the file
-                                        values = [str(t)]  # first column will have rosbag timestamp
-                                        for pair in instantaneousListOfData:
-                                            values.append(pair[1])
-                                        filewriter.writerow(values)
-                        else:
-                            #If the current topic is a tf topic
-                            #Iterate over the tf child of this topic
-                            for i in range(currentItem.childCount()):
-                                tfItem = currentItem.child(i)
-
-                                # if the current tf topic has been selected by the user
-                                if (tfItem in self.treeSelectedTopics.selectedItems()):
-
-                                    #Retrieve the frame id and the child id from the tf item
-                                    frameTfTopicString = str(tfItem.text(2)).split('|')
-                                    frameId = frameTfTopicString[0].split(':')[1].strip()
-                                    childFrameId = frameTfTopicString[1].split(':')[1].strip()
-
-                                    # Create a new CSV file for each topic
-                                    filename = folder + '/'+ bagName.replace(".","_")+'_tf_frame_id' + frameId.replace('/', '_slash_')+"_child_frame_id_"+ childFrameId.replace('/', '_slash_')+ '.csv'
-                                    self.labelProgress.setText("Save csv file " + filename)
-                                    with open(filename, 'w+') as csvfile:
-                                        fileCreated = True
-                                        filewriter = csv.writer(csvfile, delimiter=',')
-                                        firstIteration = True  # allows header row
-                                        indiceTf = 0
-                                        for subtopic, msg, t in bag.read_messages(
-                                                topicName):  # for each instant in time that has data for topicName
-                                            # parse data from this instant, which is of the form of multiple lines of "Name: value\n"
-                                            #	- put it in the form of a list of 2-element lists
-                                            indiceTf += 1
-                                            self.progressBar.setValue(int((float(
-                                                indiceTf) / topicSize) * 100 ))
-                                            msgString = str(msg)
-
-                                            #Split the tf message thanks to the transformation separator and store every transformations messages in a list
-                                            transformList = msgString.split('  - \n')
-                                            transformList = transformList[1:]
-
-                                            #iterate on all the transformations messages
-                                            for indexTransform, transformString in enumerate(transformList):
-                                                msgList = transformString.split('\n')
-                                                instantaneousListOfData = []
-                                                for nameValuePair in msgList:
-                                                    splitPair = nameValuePair.split( ':')
-                                                    for i in range(len(splitPair)):  # should be 0 to 1
-                                                        splitPair[i] = splitPair[i].strip()
-                                                    if len(splitPair) == 2:
-                                                        instantaneousListOfData.append(splitPair)
-
-                                                # write the first row from the first element of each pair
-                                                if firstIteration:  # header
-                                                    headers = ["rosbagTimestamp"]  # first column header
-                                                    for pair in instantaneousListOfData:
-                                                        headers.append(pair[0])
-                                                    filewriter.writerow(headers)
-                                                    firstIteration = False
-
-                                                if instantaneousListOfData[5][1][1:-1] == frameId and instantaneousListOfData[6][1][1:-1] == childFrameId:
-                                                    values = [str(t)]  # first column will have rosbag timestamp
-                                                    for pair in instantaneousListOfData:
-                                                            values.append(pair[1])
-                                                    filewriter.writerow(values)
-
-                    #Close the bag
-                    bag.close()
-
-                    # Update ui elements
-                    self.labelProgress.hide()
-                    self.progressBar.hide()
-
-                    if fileCreated:
-                        QtWidgets.QMessageBox.information(self, "Information", "The csv files have been successfully created")
-
-        #if there is no item in the topic tree widget and the user try to launch the csv exportation
-        elif self.treeSelectedTopics.topLevelItemCount() == 0:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
-        #if no tf topics or meaningful topic has been selected
-        else:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No topics selected")
-
-        #Reenable the function button of the ui
-        self.enableDisableButton(True)
-
+        # load the newly created bags in the topic tree widget
+        if self.checkLoad.checkState() == 2:
+            self.listOfFilteredToLoadBags.append(filename)
+        #if last bag habe been filtered and no more thread, reload the bags and reenable the ui
+        if len(self.thread_dict.keys()) == 0:
+            self.clearTree()
+            print("loaded_bags   "+str(self.listOfFilteredToLoadBags))
+            for bag in self.listOfFilteredToLoadBags:
+                self.loadBag(bag)
+            self.listOfFilteredToLoadBags =[]
+            QtWidgets.QMessageBox.information(self, "Information", "The new bag has been successfully created. \n")
+            # update ui elements
+            self.labelProgress.hide()
+            self.progressBar.hide()
+            # Reenable the function button of the ui
+            self.enableDisableButton(True)
 
     def saveNewBag(self):
         """ This function filter the topic selected by the user in a new bag"""
@@ -752,7 +624,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                     for bagIndex in bagSelection:
                         #variable to update the progress bar
                         i = 0
-
                         # retrieve all the selected informations from current bag
                         if self.lineBagFile.text()[0] != "_":
                             suffix = "_" + self.lineBagFile.text()
@@ -766,64 +637,20 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
                         #update ui elements
                         self.labelProgress.show()
                         self.progressBar.show()
+                        self.multiThreadedProgression = [0, 0]
                         listFileName.append(filename)
                         self.labelProgress.setText("Creating new bag : "+filename)
-
-                        # Create a new Bag file for each topic
-                        with rosbag.Bag(filename, 'w') as outbag:
-                            if self.checkMeta.checkState() != 2:
-                                metadata_msg = String(data='time when the bag was recorded ')
-                                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(self.dictBagsInfos[self.treeSelectedTopics.topLevelItem(bagIndex).text(0)][2] ))
-
-                            for topic, msg, t in rosbag.Bag(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).read_messages():
-
-
-                                # update ui elements
-                                i += 1
-                                self.progressBar.setValue(int((float(
-                                    i) / self.bagSize) * 100))
-
-                                #if the message is a tf message and there is only one transformation in it
-                                if topic == "/tf" and len(msg.transforms) == 1:
-                                    for tfMsg in tfSelection:
-                                        #if the tf message match a selected tf topic
-                                        if tfMsg[0] == msg.transforms[0].header.frame_id and tfMsg[1] == msg.transforms[0].child_frame_id:
-                                            outbag.write(topic, msg, t)
-
-                                # if the message is a tf message and there is more than one transformation in it
-                                elif topic == "/tf" and len(msg.transforms) > 1:
-                                    inSelection = False
-                                    temp_msg = TFMessage()
-
-                                    #iterate over the different transform messages
-                                    for tfMsg in tfSelection:
-                                        for index in tfMsg[2]:
-                                            # if the transformation message match a selected tf topic
-                                                if index < len(msg.transforms) and tfMsg[0] == msg.transforms[index].header.frame_id and tfMsg[1] == msg.transforms[index].child_frame_id:
-                                                    temp_msg.transforms.append(msg.transforms[index])
-                                                    inSelection = True
+                        tempThread = QtCore.QThread()
+                        tempThread.start()
+                        filter_worker = BagFilter_Worker(str(tempThread),filename,bagIndex,self.treeSelectedTopics,topicSelection,tfSelection,self.dictBagsInfos,self.checkMeta.checkState(), self.bagSize)
+                        filter_worker.progressSignal.connect(self.updateProgressBar)
+                        filter_worker.finishThread.connect(self.killFilterThread)
+                        filter_worker.moveToThread(tempThread)
+                        filter_worker.start.emit()
+                        self.thread_dict[str(tempThread)] = tempThread
+                        self.worker_dict[str(tempThread)] = filter_worker
 
 
-                                    if inSelection:
-                                        outbag.write(topic, temp_msg, t)
-                                else:
-                                    # if the message is a not a tf message and the topic of this message has been selected by the user
-                                    if topic in topicSelection:
-                                        outbag.write(topic, msg, t)
-                            if self.checkMeta.checkState() != 2:
-                                metadata_msg = String(data='time when the bag was ended ')
-                                outbag.write('/metadata', metadata_msg, rospy.Time.from_sec(self.dictBagsInfos[self.treeSelectedTopics.topLevelItem(bagIndex).text(0)][3]))
-
-                            #update ui elements
-                            self.labelProgress.hide()
-                            self.progressBar.hide()
-
-                    #load the newly created bags in the topic tree widget
-                    if self.checkLoad.checkState() == 2:
-                        self.clearTree()
-                        for file in listFileName:
-                                self.loadBag(file)
-                    QtWidgets.QMessageBox.information(self, "Information", "The new bag has been successfully created. \n")
 
                 # if no tf topics or meaningful topic has been selected
                 else:
@@ -833,8 +660,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         else:
             QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
 
-        # Re-enable the function button of the ui
-        self.enableDisableButton(True)
 
 
     def playBag(self):
