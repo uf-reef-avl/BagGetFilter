@@ -94,9 +94,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.label.setText("Specify the suffix of your filtered bag name")
         self.buttonLoadBagPath.setText("Clear Bags")
         self.setTreeSize()
-        self.mplCanvas = MplCanvas(self)
-        self.plotLayout.addWidget(self.mplCanvas)
-        self.mplCanvas.setHidden(True)
+        # self.mplCanvas = MplCanvas(self)
+        # self.plotLayout.addWidget(self.mplCanvas)
+        #self.mplCanvas.setHidden(True)
 
 
         # Paring buttons to functions
@@ -105,9 +105,9 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.buttonQuit.clicked.connect(self.saveCsvFile)
         self.buttonPlayBag.clicked.connect(self.playBag)
         self.buttonClipboard.clicked.connect(self.showClipboard)
-        self.buttonPlots.clicked.connect(self.togglePlots)
-        self.mplCanvas.button_load.clicked.connect(self.loadDataInsidePlot)
-        self.mplCanvas.button_plot.clicked.connect(self.showPlots)
+        # self.buttonPlots.clicked.connect(self.togglePlots)
+        # self.mplCanvas.button_load.clicked.connect(self.loadDataInsidePlot)
+        # self.mplCanvas.button_plot.clicked.connect(self.showPlots)
         self.treeSelectedTopics.itemDoubleClicked.connect(self.editBagTimeStamp)
         self.treeSelectedTopics.itemChanged.connect(self.changeBagTimeStamp)
         self.lineResearch.textChanged.connect(self.changeTextlineResearch)
@@ -128,74 +128,74 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.listOfFilteredToLoadBags = []
         self.multiThreadedProgression = [0.,0.] #indice 0 is sum of progression, indice one is number of message
 
-    def togglePlots(self):
-        self.mplCanvas.setHidden(not self.mplCanvas.isHidden())
-
-    def showPlots(self):
-        self.mplCanvas.plot()
-
-
-    @QtCore.pyqtSlot(str,str,dict)
-    def killPlotThread(self, id,bag_name,dict_data):
-        del self.worker_dict[id]
-        self.thread_dict[id].quit()
-        self.thread_dict[id].wait()
-        del self.thread_dict[id]
-
-        for topic in dict_data.keys():
-            panda_data_frame =  pd.DataFrame(dict_data[topic][1],
-
-                   columns=dict_data[topic][0])
-            self.mplCanvas.load_data_topic( bag_name, topic, dict_data[topic][0], panda_data_frame)
-        #if last bag habe been filtered and no more thread, reload the bags and reenable the ui
-        if len(self.thread_dict.keys()) == 0:
-            # update ui elements
-            self.labelProgress.hide()
-            self.progressBar.hide()
-            # Reenable the function button of the ui
-            self.enableDisableButton(True)
-
-
-    def loadDataInsidePlot(self):
-
-        """Load the topic in csv format"""
-
-        # Disable the functions buttons
-        self.enableDisableButton(False)
-
-        # retrieve all the selected informations from the topics tree widget
-        bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
-
-        if meaningfullItemSelected:
-                # Update ui elements
-                self.labelProgress.show()
-                self.progressBar.show()
-                self.progressBar.setValue(0.)
-                self.multiThreadedProgression = [0, 0]
-                # iterate on all the bags index selected
-                for bagIndex in bagSelection:
-                    tempThread = QtCore.QThread()
-                    tempThread.start()
-                    bag_filename = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))
-                    bag_name = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
-                    loader = plot_loader(str(tempThread), bag_filename, bag_name, bagIndex,
-                                            self.listOfTopics, self.treeSelectedTopics)
-                    loader.progressSignal.connect(self.updateProgressBar)
-                    loader.finishThread.connect(self.killPlotThread)
-                    loader.moveToThread(tempThread)
-                    loader.start.emit()
-                    self.thread_dict[str(tempThread)] = tempThread
-                    self.worker_dict[str(tempThread)] = loader
-
-                    # if there is no item in the topic tree widget and the user try to launch the csv exportation
-        elif self.treeSelectedTopics.topLevelItemCount() == 0:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
-        # if no tf topics or meaningful topic has been selected
-        else:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No topics selected")
-
-        # Disable the functions buttons
-        self.enableDisableButton(False)
+    # def togglePlots(self):
+    #     self.mplCanvas.setHidden(not self.mplCanvas.isHidden())
+    #
+    # def showPlots(self):
+    #     self.mplCanvas.plot()
+    #
+    #
+    # @QtCore.pyqtSlot(str,str,dict)
+    # def killPlotThread(self, id,bag_name,dict_data):
+    #     del self.worker_dict[id]
+    #     self.thread_dict[id].quit()
+    #     self.thread_dict[id].wait()
+    #     del self.thread_dict[id]
+    #
+    #     for topic in dict_data.keys():
+    #         panda_data_frame =  pd.DataFrame(dict_data[topic][1],
+    #
+    #                columns=dict_data[topic][0])
+    #         self.mplCanvas.load_data_topic( bag_name, topic, dict_data[topic][0], panda_data_frame)
+    #     #if last bag habe been filtered and no more thread, reload the bags and reenable the ui
+    #     if len(self.thread_dict.keys()) == 0:
+    #         # update ui elements
+    #         self.labelProgress.hide()
+    #         self.progressBar.hide()
+    #         # Reenable the function button of the ui
+    #         self.enableDisableButton(True)
+    #
+    #
+    # def loadDataInsidePlot(self):
+    #
+    #     """Load the topic in csv format"""
+    #
+    #     # Disable the functions buttons
+    #     self.enableDisableButton(False)
+    #
+    #     # retrieve all the selected informations from the topics tree widget
+    #     bagSelection, dictTopicSelection, dictTfSelection, meaningfullItemSelected = self.bagSelected()
+    #
+    #     if meaningfullItemSelected:
+    #             # Update ui elements
+    #             self.labelProgress.show()
+    #             self.progressBar.show()
+    #             self.progressBar.setValue(0.)
+    #             self.multiThreadedProgression = [0, 0]
+    #             # iterate on all the bags index selected
+    #             for bagIndex in bagSelection:
+    #                 tempThread = QtCore.QThread()
+    #                 tempThread.start()
+    #                 bag_filename = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0))
+    #                 bag_name = str(self.treeSelectedTopics.topLevelItem(bagIndex).text(0)).split('/')[-1][:-4]
+    #                 loader = plot_loader(str(tempThread), bag_filename, bag_name, bagIndex,
+    #                                         self.listOfTopics, self.treeSelectedTopics)
+    #                 loader.progressSignal.connect(self.updateProgressBar)
+    #                 loader.finishThread.connect(self.killPlotThread)
+    #                 loader.moveToThread(tempThread)
+    #                 loader.start.emit()
+    #                 self.thread_dict[str(tempThread)] = tempThread
+    #                 self.worker_dict[str(tempThread)] = loader
+    #
+    #                 # if there is no item in the topic tree widget and the user try to launch the csv exportation
+    #     elif self.treeSelectedTopics.topLevelItemCount() == 0:
+    #         QtWidgets.QMessageBox.warning(self, "Warning", "No bag selected")
+    #     # if no tf topics or meaningful topic has been selected
+    #     else:
+    #         QtWidgets.QMessageBox.warning(self, "Warning", "No topics selected")
+    #
+    #     # Disable the functions buttons
+    #     self.enableDisableButton(False)
 
 
 

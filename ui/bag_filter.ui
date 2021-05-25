@@ -50,13 +50,6 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="buttonPlots">
-       <property name="text">
-        <string>Show plots</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item row="11" column="0">
