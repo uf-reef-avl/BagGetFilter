@@ -6,7 +6,7 @@ The BagGetFilter utility is a simple, user friendly interface to manipulate rosb
 
 For users:
 
-Download the executable using python3 at this [link](https://drive.google.com/file/d/12oGTnD59V2bATVYgFmzh6XJx4f0s7Kof/view?usp=sharing)
+Download the executable using python3 at this [link](https://drive.google.com/file/d/10PXrukzT1F9a9hIVJkHOXgl6tUQOg7VS/view?usp=sharing)
 
 For developers:
 
@@ -19,15 +19,15 @@ git clone http://192.168.1.101/AVL-Summer-18/BagGetFilter
 
 ## Prerequisites
 
-ROS(Kinetic) needs to be installed for several of the BagGetFilter's functions to work
+ROS Melodic needs to be installed for several of the BagGetFilter's functions to work
 
 
 ## Usage
 
-The executable of the BagGetFilter is located in the "dist" repository. To run it, navigate to the dist repository and type the command:
+Download the zip and extract it, then use the following command on the executable:
 
 ```
-./BagGetFilter
+./BagGetFilter_V_X_X_X
 ```
 
 Then the main window will appear:
@@ -132,6 +132,8 @@ It should regenerate a working executable.
  - Python 2.7
 
  - pyinstaller
+
+ -tf2 compiled in python3
 
 
 ##Authors
