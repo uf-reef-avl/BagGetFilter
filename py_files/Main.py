@@ -523,7 +523,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         self.thread_dict[id].quit()
         self.thread_dict[id].wait()
         del self.thread_dict[id]
-        print("killed")
         # Update ui elements
         self.labelProgress.hide()
         self.progressBar.hide()
@@ -575,7 +574,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
 
     @QtCore.pyqtSlot(str,str)
     def killFilterThread(self, id,filename):
-        print(filename)
         del self.worker_dict[id]
         self.thread_dict[id].quit()
         self.thread_dict[id].wait()
@@ -587,7 +585,6 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
         #if last bag habe been filtered and no more thread, reload the bags and reenable the ui
         if len(self.thread_dict.keys()) == 0:
             self.clearTree()
-            print("loaded_bags   "+str(self.listOfFilteredToLoadBags))
             for bag in self.listOfFilteredToLoadBags:
                 self.loadBag(bag)
             self.listOfFilteredToLoadBags =[]
@@ -708,6 +705,15 @@ class BagFilter(QtWidgets.QDialog, BagFilterDesign.Ui_dialog):
     def resizeEvent(self, event):
         """Adjust the header of the topic tree widget every time the size of the main window is updated"""
         self.setTreeSize()
+
+    def closeEvent(self, event):
+        for worker in self.worker_dict.items():
+            del worker
+        for thread in self.thread_dict.items():
+            thread.quit()
+            thread.wait()
+            del thread
+
 
 
 def main():
