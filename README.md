@@ -122,7 +122,7 @@ then launch the command:
 
 It should regenerate a working executable.
 
-##Built With
+## Built With
 --------------
 
  - pyqt5
@@ -133,10 +133,10 @@ It should regenerate a working executable.
 
  - pyinstaller
 
- -tf2 compiled in python3
+ - tf2 compiled in python3
 
 
-##Authors
+## Authors
 -----------
 
 - Paul Buzaud
