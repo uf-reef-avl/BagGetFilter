@@ -1,14 +1,18 @@
+
 # BagGetFilter
 The BagGetFilter utility is a simple, user friendly interface to manipulate rosbags. The user can **play rosbags** or **filter those bags and export topics into CSV format**.
 
 
 ## Installation
 
-For users:
+**For users**:
 
-Download the executable using python3 at this [link](https://drive.google.com/file/d/10PXrukzT1F9a9hIVJkHOXgl6tUQOg7VS/view?usp=sharing)
 
-For developers:
+Download the executable using python3 at this <h1> [download link](https://drive.google.com/file/d/10PXrukzT1F9a9hIVJkHOXgl6tUQOg7VS/view?usp=sharing)</h1>
+
+
+
+**For developers**:
 
 Clone the BagGetFilter's remote repository in your computer.
 
