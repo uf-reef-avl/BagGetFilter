@@ -17,7 +17,7 @@ Download the executable using python3 at this <h1> [Download link](https://drive
 Clone the BagGetFilter's remote repository in your computer.
 
 ```
-git clone http://192.168.1.101/AVL-Summer-18/BagGetFilter
+https://github.com/uf-reef-avl/BagGetFilter
 ```
 
 
@@ -43,7 +43,7 @@ Then the main window will appear:
 
 ![Select Area Bag file](./docs/imgs/Select_Bag_Area.png "Select Area Bag File")
 
- - All of the topics contianed in the bag file(s) will be displayed under the "Topics" column. The clipboard area of the bags will be also populated with some common roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. The "Clear Bags" button clears the bags currently loaded in the application.
+ - All of the topics contained in the bag file(s) will be displayed under the "Topics" column. The clipboard area of the bags will be also populated with some common roslaunch commands. The user will be able to see it by clicking on the "Show Clipboard" button. The "Clear Bags" button clears the bags currently loaded in the application.
 
 ![Clipboard](./docs/imgs/Clipboard.png "Clipboard")
 
@@ -51,6 +51,9 @@ Then the main window will appear:
 
 ![Selected Topics](./docs/imgs/Selected_Topics.png "Select Topics")
 
+ - A topic search bar is also available to select easily some topics. The **|** character can be used to search for multiple strings in the topics list.
+
+![Selection Bar](./docs/imgs/selection_bar.png "Selection bar")
 
 ### Bag Manipulation
 
@@ -63,6 +66,8 @@ There are several ways to edit/play bag files:
  - Create csv files of the selected topics by clicking on the "Save selected topics to csv files" button. The files will be automatically named but the storage directory has to be specified.
 
  - Create a new bag with only the selected topics by clicking on the "Save selected topics in a filtered bag" button. The files will be automatically named by keeping the same bag name and adding the suffix specified in the upper line. The storage directory must also be specified.
+
+ - **enable tf in bags loading** checkbox permits to load tf topics inside BagGetFilter. It is not advisable to check it when a voluminous bag will be loaded because it will slow down the performance. 
  
 ![Bag Suffix](./docs/imgs/Bag_suffix.png "Bag Suffix")
 
