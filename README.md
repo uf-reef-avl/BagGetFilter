@@ -30,6 +30,9 @@ ROS Melodic needs to be installed for several of the BagGetFilter's functions to
 
 Download the zip and extract it, then use the following command on the executable:
 
+[Download link](https://drive.google.com/file/d/10PXrukzT1F9a9hIVJkHOXgl6tUQOg7VS/view?usp=sharing)
+
+
 ```
 ./BagGetFilter_V_X_X_X
 ```
