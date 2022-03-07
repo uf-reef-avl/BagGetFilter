@@ -1,7 +1,7 @@
+[![DOI](https://zenodo.org/badge/373238734.svg)](https://zenodo.org/badge/latestdoi/373238734)
 
 # BagGetFilter
 The BagGetFilter utility is a simple, user friendly interface to manipulate rosbags. The user can **play rosbags** or **filter those bags and export topics into CSV format**.
-
 
 ## Installation
 
