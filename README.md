@@ -28,7 +28,7 @@ ROS Melodic needs to be installed for some of the BagGetFilter's functions to wo
 
 ## Usage
 If you use this software please cite as follows:
-
+```
 @software{Buzaud_BagGetFilter_A_simple_2021,
 author = {Buzaud, Paul and Ramos, J. Humberto and Ganesh, Prashant and Brink, Kevin},
 doi = {10.5281/zenodo.6334972},
@@ -38,6 +38,7 @@ url = {https://github.com/uf-reef-avl/BagGetFilter},
 version = {1.0},
 year = {2021}
 }
+```
 
 Download the zip and extract it, then use the following command on the executable:
 
