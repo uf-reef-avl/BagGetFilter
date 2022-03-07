@@ -6,6 +6,10 @@ authors:
 - family-names: "Ramos"
   given-names: "J. Humberto"
   orcid: " https://orcid.org/0000-0002-3595-2517"
+  - family-names: "Ganesh"
+  given-names: "Prashant"
+  - family-names: "Brink"
+  given-names: "Kevin"
 title: "BagGetFilter: A simple user friendly interface to manipulate ROSbags"
 version: 1.0
 doi: 10.5281/zenodo.6334972
