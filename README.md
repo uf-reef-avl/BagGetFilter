@@ -152,5 +152,8 @@ It should regenerate a working executable.
 -----------
 
 - Paul Buzaud
+- Humberto Ramos
+- Prashant Ganesh
+- Kevin Brink
 
 
