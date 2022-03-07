@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/373238734.svg)](https://zenodo.org/badge/latestdoi/373238734)
 
 # BagGetFilter
-The BagGetFilter utility is a simple, user friendly interface to manipulate rosbags. The user can **play rosbags** or **filter those bags and export topics into CSV format**.
+The BagGetFilter utility is a simple, user friendly interface to manipulate rosbags. The user can **play rosbags**, **filter bags, and export topics into CSV format**.
 
 ## Installation
 
@@ -14,7 +14,7 @@ Download the executable using python3 at this <h1> [Download link](https://drive
 
 **For developers**:
 
-Clone the BagGetFilter's remote repository in your computer.
+Clone the BagGetFilter's remote repository to your computer.
 
 ```
 https://github.com/uf-reef-avl/BagGetFilter
@@ -23,7 +23,7 @@ https://github.com/uf-reef-avl/BagGetFilter
 
 ## Prerequisites
 
-ROS Melodic needs to be installed for several of the BagGetFilter's functions to work
+ROS Melodic needs to be installed for some of the BagGetFilter's functions to work
 
 
 ## Usage
