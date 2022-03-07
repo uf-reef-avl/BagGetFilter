@@ -3,7 +3,7 @@ message: "If you use this software, please cite it as below."
 authors:
   - family-names: "Buzaud"
     given-names: "Paul"
-    orcid:  "https://orcid.org/0000-0002-3595-2517"
+    orcid: "https://orcid.org/0000-0002-3595-2517"
 title: BagGetFilter: A simple user friendly interface to manipulate ROSbags
 version: 1.0
 doi: 10.5281/zenodo.6334972 
