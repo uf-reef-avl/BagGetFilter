@@ -23,14 +23,11 @@ https://github.com/uf-reef-avl/BagGetFilter
 
 ## Prerequisites
 
-ROS Melodic needs to be installed for some of the BagGetFilter's functions to work
-
-
 ## Usage
 If you use this software please cite as follows:
 ```
 @software{Buzaud_BagGetFilter_A_simple_2021,
-author = {Buzaud, Paul and Ramos, J. Humberto and Ganesh, Prashant and Brink, Kevin},
+author = {Paul Buzaud, J. Humberto Ramos, Prashant Ganesh, Kevin Brink},
 doi = {10.5281/zenodo.6334972},
 month = {10},
 title = {{BagGetFilter: A simple user friendly interface to manipulate ROSbags}},
