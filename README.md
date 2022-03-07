@@ -10,7 +10,18 @@ The BagGetFilter utility is a simple, user friendly interface to manipulate rosb
 
 Download the executable using python3 at this <h1> [Download link](https://drive.google.com/file/d/10PXrukzT1F9a9hIVJkHOXgl6tUQOg7VS/view?usp=sharing)</h1>
 
-
+If you use this software please cite as follows:
+```
+@software{Buzaud_BagGetFilter_A_simple_2021,
+author = {Paul Buzaud, J. Humberto Ramos, Prashant Ganesh, Kevin Brink},
+doi = {10.5281/zenodo.6334972},
+month = {10},
+title = {{BagGetFilter: A simple user friendly interface to manipulate ROSbags}},
+url = {https://github.com/uf-reef-avl/BagGetFilter},
+version = {1.0},
+year = {2021}
+}
+```
 
 **For developers**:
 
@@ -24,18 +35,7 @@ https://github.com/uf-reef-avl/BagGetFilter
 ## Prerequisites
 
 ## Usage
-If you use this software please cite as follows:
-```
-@software{Buzaud_BagGetFilter_A_simple_2021,
-author = {Paul Buzaud, J. Humberto Ramos, Prashant Ganesh, Kevin Brink},
-doi = {10.5281/zenodo.6334972},
-month = {10},
-title = {{BagGetFilter: A simple user friendly interface to manipulate ROSbags}},
-url = {https://github.com/uf-reef-avl/BagGetFilter},
-version = {1.0},
-year = {2021}
-}
-```
+
 
 Download the zip and extract it, then use the following command on the executable:
 
