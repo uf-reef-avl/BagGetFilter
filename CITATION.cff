@@ -1,0 +1,12 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Buzaud, Ramos, Ganesh, Brink
+    given-names: Paul, J. Humberto, Kevin
+    orcid:  "https://orcid.org/0000-0002-3595-2517"
+title: BagGetFilter: A simple user friendly interface to manipulate ROSbags
+version: 1.0
+doi: 10.5281/zenodo.6334972 
+date-released: 2017-12-18
+url: "https://github.com/uf-reef-avl/BagGetFilter"
+            
