@@ -5,7 +5,7 @@ authors:
   given-names: "Paul"
 - family-names: "Ganesh"
   given-names: "Prashant"
-  - family-names: "Ramos"
+- family-names: "Ramos"
   given-names: "J. Humberto"
   orcid: " https://orcid.org/0000-0002-3595-2517"
 - family-names: "Brink"
