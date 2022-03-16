@@ -3,6 +3,10 @@
 # BagGetFilter
 BagGetFilter utility is a user friendly interface to manipulate rosbags. The user can **play rosbags**, **filter bags, and export topics into CSV format**.
 
+
+[Video](https://www.youtube.com/watch?v=RqHxLjL6b3o)
+
+
 ## Installation
 
 **For users**:
